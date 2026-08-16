@@ -1,0 +1,19 @@
+{
+  "schema": "game-live-v3/shot/1",
+  "character_id": "hero",
+  "shot_name": "portrait",
+  "output": "output/hero/portrait.png",
+  "rig": "default_no_toes",
+  "pose_folder": "default_fk",
+  "pose": "t-pose",
+  "camera": {
+    "distance_m": 2.8,
+    "height_m": 1.45,
+    "focal_length_mm": 50
+  },
+  "render": {
+    "engine": "BLENDER_EEVEE_NEXT",
+    "width": 1024,
+    "height": 1536
+  }
+}
