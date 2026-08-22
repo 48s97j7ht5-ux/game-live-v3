@@ -1,8 +1,10 @@
-Put Leonardo exports here (same 3/4 facing right):
+Структура (ваши Leonardo PNG):
 
-  body_base.png   — headless body
-  head_base.png   — bald head
-  hair_black.png  — hair with face cutout (white inside)
+  body/body_base.png   — тело без головы
+  head/head_base.png   — голова без лица (серый фон)
+  hair/hair_black.png  — волосы (белый фон / вырез под лицо)
 
-Tune offsets in compositor/ (browser) or characters/test/assemble.json
-Then: python3 scripts/compose.py
+Загрузка с телефона: GitHub → game-live-v3 → Add file → Upload files
+в нужную папку.
+
+Сборка: https://48s97j7ht5-ux.github.io/game-live-v3/compositor/

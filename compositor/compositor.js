@@ -1,7 +1,7 @@
 const LAYER_DEFS = [
-  { id: "body", label: "Body", fileHint: "body_base.png", keyDefault: false },
-  { id: "head", label: "Head", fileHint: "head_base.png", keyDefault: true },
-  { id: "hair", label: "Hair", fileHint: "hair_black.png", keyDefault: true },
+  { id: "body", label: "Body", fileHint: "body/body_base.png", keyDefault: false },
+  { id: "head", label: "Head", fileHint: "head/head_base.png", keyDefault: true },
+  { id: "hair", label: "Hair", fileHint: "hair/hair_black.png", keyDefault: true },
 ];
 
 /** @type {Record<string, { img: HTMLImageElement | null, x: number, y: number, scale: number, key: boolean, fileName: string }>} */
@@ -15,8 +15,8 @@ function initState() {
   for (const def of LAYER_DEFS) {
     state[def.id] = {
       img: null,
-      x: def.id === "body" ? 156 : def.id === "head" ? 200 : 175,
-      y: def.id === "body" ? 200 : def.id === "head" ? 40 : 10,
+      x: 0,
+      y: 0,
       scale: 1,
       key: def.keyDefault,
       fileName: `templates/parts/${def.fileHint}`,

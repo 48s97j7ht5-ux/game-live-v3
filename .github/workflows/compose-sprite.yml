@@ -22,4 +22,4 @@ jobs:
         with:
           name: composed-sprite
           path: output/test/composed.png
-        if: hashFiles('templates/parts/body_base.png') != ''
+        if: hashFiles('templates/parts/body/body_base.png') != ''

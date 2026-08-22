@@ -1,29 +1,29 @@
 {
   "schema": "game-live-v3/assemble/1",
   "output": "output/test/composed.png",
-  "canvas": { "width": 512, "height": 768 },
+  "canvas": { "width": 1024, "height": 1024 },
   "layers": [
     {
       "id": "body",
-      "file": "templates/parts/body_base.png",
-      "x": 156,
-      "y": 200,
+      "file": "templates/parts/body/body_base.png",
+      "x": 0,
+      "y": 0,
       "scale": 1.0,
       "key_white": false
     },
     {
       "id": "head",
-      "file": "templates/parts/head_base.png",
-      "x": 200,
-      "y": 40,
+      "file": "templates/parts/head/head_base.png",
+      "x": 0,
+      "y": 0,
       "scale": 1.0,
       "key_white": true
     },
     {
       "id": "hair",
-      "file": "templates/parts/hair_black.png",
-      "x": 175,
-      "y": 10,
+      "file": "templates/parts/hair/hair_black.png",
+      "x": 0,
+      "y": 0,
       "scale": 1.0,
       "key_white": true
     }

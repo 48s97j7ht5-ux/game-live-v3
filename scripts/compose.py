@@ -24,6 +24,10 @@ def key_near_white_to_alpha(img: Image.Image, threshold: int = 248) -> Image.Ima
                 continue
             if r >= threshold and g >= threshold and b >= threshold:
                 px[x, y] = (r, g, b, 0)
+                continue
+            # light grey backdrop (head layer)
+            if abs(r - g) < 12 and abs(g - b) < 12 and r >= 200 and g >= 200 and b >= 200:
+                px[x, y] = (r, g, b, 0)
     return img
 
 
