@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>game-live-v3 — настройка персонажа</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">game-live-v3 · MPFB2</p>
+      <h1>Станок образов</h1>
+      <p class="lede">
+        Настройка внешности и позы в браузере. Сохраните JSON в репозиторий — рендер пойдёт в GitHub Actions (Blender без установки у вас).
+      </p>
+    </div>
+    <div class="header-actions">
+      <label class="field inline">
+        <span>ID персонажа</span>
+        <input type="text" id="characterId" value="hero" pattern="[a-z0-9_-]+" title="латиница, цифры, _ -" />
+      </label>
+      <label class="field inline">
+        <span>Имя кадра</span>
+        <input type="text" id="shotName" value="portrait" pattern="[a-z0-9_-]+" />
+      </label>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-labelledby="appearance-heading">
+      <h2 id="appearance-heading">Внешность</h2>
+
+      <div class="grid two">
+        <label class="field">
+          <span>Пол <output for="gender" id="genderOut">женский</output></span>
+          <input type="range" id="gender" min="0" max="1" step="0.01" value="0" />
+        </label>
+        <label class="field">
+          <span>Возраст</span>
+          <input type="range" id="age" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+        <label class="field">
+          <span>Рост</span>
+          <input type="range" id="height" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+        <label class="field">
+          <span>Масса тела</span>
+          <input type="range" id="weight" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+        <label class="field">
+          <span>Мускулатура</span>
+          <input type="range" id="muscle" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+        <label class="field">
+          <span>Пропорции</span>
+          <input type="range" id="proportions" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+      </div>
+
+      <h3>Смесь типов внешности</h3>
+      <p class="hint">Сумма нормализуется до 1 при экспорте.</p>
+      <div class="grid three">
+        <label class="field">
+          <span>Европеоид</span>
+          <input type="range" id="raceCaucasian" min="0" max="1" step="0.01" value="0.34" />
+        </label>
+        <label class="field">
+          <span>Азиат</span>
+          <input type="range" id="raceAsian" min="0" max="1" step="0.01" value="0.33" />
+        </label>
+        <label class="field">
+          <span>Африкан</span>
+          <input type="range" id="raceAfrican" min="0" max="1" step="0.01" value="0.33" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Материал кожи (MPFB mhmat)</span>
+        <select id="skinMhmat">
+          <option value="middleage_caucasian_female/middleage_caucasian_female.mhmat">middleage_caucasian_female</option>
+          <option value="young_caucasian_male/young_caucasian_male.mhmat">young_caucasian_male</option>
+          <option value="young_caucasian_female/young_caucasian_female.mhmat">young_caucasian_female</option>
+          <option value="middleage_african_male/middleage_african_male.mhmat">middleage_african_male</option>
+          <option value="middleage_asian_female/middleage_asian_female.mhmat">middleage_asian_female</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Волосы (mhclo, пусто = без волос)</span>
+        <input type="text" id="hair" value="" placeholder="short01/short01.mhclo" />
+      </label>
+
+      <label class="field">
+        <span>Одежда (через запятую, mhclo)</span>
+        <input type="text" id="clothes" value="" placeholder="t-shirt01/t-shirt01.mhclo" />
+      </label>
+    </section>
+
+    <section class="panel" aria-labelledby="pose-heading">
+      <h2 id="pose-heading">Поза и камера</h2>
+
+      <label class="field">
+        <span>Тип рига MPFB</span>
+        <select id="rig">
+          <option value="default_no_toes" selected>default_no_toes</option>
+          <option value="default">default</option>
+          <option value="game_engine">game_engine</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Поза (файл без .json в poses/&lt;rig&gt;_fk/)</span>
+        <select id="pose">
+          <option value="t-pose" selected>T-pose</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Своя поза (перекрывает список)</span>
+        <input type="text" id="customPose" placeholder="например: wave" />
+      </label>
+
+      <div class="grid two">
+        <label class="field">
+          <span>Дистанция камеры (м)</span>
+          <input type="number" id="camDistance" min="0.5" max="10" step="0.1" value="2.8" />
+        </label>
+        <label class="field">
+          <span>Высота камеры (м)</span>
+          <input type="number" id="camHeight" min="0" max="3" step="0.05" value="1.45" />
+        </label>
+        <label class="field">
+          <span>Фокусное (мм)</span>
+          <input type="number" id="camFocal" min="20" max="120" step="1" value="50" />
+        </label>
+        <label class="field">
+          <span>Разрешение</span>
+          <select id="resolution">
+            <option value="512x768">512 × 768</option>
+            <option value="768x1152">768 × 1152</option>
+            <option value="1024x1536" selected>1024 × 1536</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Движок рендера</span>
+        <select id="engine">
+          <option value="BLENDER_EEVEE_NEXT" selected>EEVEE (быстрее)</option>
+          <option value="CYCLES">Cycles (качество)</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="panel panel-wide" aria-labelledby="export-heading">
+      <h2 id="export-heading">Экспорт в Git</h2>
+      <p class="hint">
+        Положите файлы в репозиторий:
+        <code>characters/&lt;id&gt;/appearance.json</code> и
+        <code>characters/&lt;id&gt;/shots/&lt;имя&gt;.json</code>,
+        затем запустите workflow рендера (когда он будет подключён).
+      </p>
+
+      <div class="export-actions">
+        <button type="button" id="btnDownloadAppearance">Скачать appearance.json</button>
+        <button type="button" id="btnDownloadShot">Скачать shot.json</button>
+        <button type="button" class="primary" id="btnDownloadJob">Скачать job.json (всё в одном)</button>
+        <button type="button" id="btnCopyJob">Копировать job в буфер</button>
+      </div>
+
+      <label class="field">
+        <span>Предпросмотр JSON</span>
+        <textarea id="preview" rows="18" readonly spellcheck="false"></textarea>
+      </label>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Локальный Blender не нужен. MPFB2 ≥ Blender 4.2 — только в CI.</p>
+  </footer>
+
+  <script type="module" src="configurator.js"></script>
+</body>
+</html>
