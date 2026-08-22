@@ -5,7 +5,7 @@
 ## Compose (body + head + hair)
 
 1. Положите PNG в [`templates/parts/`](templates/parts/):
-   - `body_base.png`, `head_base.png`, `hair_black.png`
+   - `body/body_base.png`, `head/head_base.png`, `hair/hair_black.png`
 2. **Телефон / браузер:** откройте [`compositor/index.html`](compositor/index.html) (или GitHub Pages → «Сборка спрайта»).
    - Загрузите три файла, подгоните X / Y / Scale.
    - Скачайте `assemble.json` и `composed.png`.
