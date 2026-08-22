@@ -1,27 +1,39 @@
 # game-live-v3
 
-Станок статичных образов персонажей (MPFB2) без локального Blender.
+2D персонажи ¾: части из Leonardo → сборка в браузере или скриптом.
 
-## Настройка через HTML
+## Compose (body + head + hair)
 
-Откройте [`configurator/index.html`](configurator/index.html) в браузере или опубликуйте **GitHub Pages** (workflow `pages-configurator.yml`).
+1. Положите PNG в [`templates/parts/`](templates/parts/):
+   - `body_base.png`, `head_base.png`, `hair_black.png`
+2. **Телефон / браузер:** откройте [`compositor/index.html`](compositor/index.html) (или GitHub Pages → «Сборка спрайта»).
+   - Загрузите три файла, подгоните X / Y / Scale.
+   - Скачайте `assemble.json` и `composed.png`.
+3. Положите `assemble.json` в `characters/<id>/assemble.json` и обновите пути `file` при необходимости.
+4. **CLI:**
 
-1. Настройте внешность и позу в форме.
-2. Скачайте `appearance.json` и `shot.json` (или один `job.json`).
-3. Положите их в репозиторий:
-   - `characters/<id>/appearance.json`
-   - `characters/<id>/shots/<имя>.json`
+```bash
+pip install -r requirements.txt
+python3 scripts/compose.py characters/test/assemble.json
+```
 
-Пример: [`characters/hero/`](characters/hero/).
+Результат: [`output/test/composed.png`](output/test/composed.png).
 
-## Рендер (следующий шаг)
+Слой **body** часто без key (серый фон); **head/hair** — включите «key white», если фон белый.
 
-GitHub Actions + Docker (Blender 4.2+, MPFB2, system assets) читает JSON из `characters/` и пишет PNG в `output/`. Workflow рендера будет добавлен отдельно.
+## MPFB configurator (legacy)
 
-## Схемы
+[`configurator/`](configurator/) — JSON для старого MPFB-пайплайна, если понадобится.
 
-| Файл | Назначение |
+## GitHub Pages
+
+Workflow `pages-configurator.yml` публикует `site/` (ссылки на compositor и configurator).
+
+## Схема assemble
+
+| Поле | Назначение |
 |------|------------|
-| `appearance.json` | Пресет MPFB2 (внешность) |
-| `shot.json` | Поза, камера, разрешение (`game-live-v3/shot/1`) |
-| `job.json` | Объединённый экспорт из HTML (`game-live-v3/job/1`) |
+| `canvas` | размер холста |
+| `layers[]` | порядок: body → head → hair |
+| `x`, `y`, `scale` | позиция слоя |
+| `key_white` | убрать белый фон (и в браузере — общий toggle) |

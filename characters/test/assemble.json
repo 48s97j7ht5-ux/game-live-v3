@@ -1,0 +1,31 @@
+{
+  "schema": "game-live-v3/assemble/1",
+  "output": "output/test/composed.png",
+  "canvas": { "width": 512, "height": 768 },
+  "layers": [
+    {
+      "id": "body",
+      "file": "templates/parts/body_base.png",
+      "x": 156,
+      "y": 200,
+      "scale": 1.0,
+      "key_white": false
+    },
+    {
+      "id": "head",
+      "file": "templates/parts/head_base.png",
+      "x": 200,
+      "y": 40,
+      "scale": 1.0,
+      "key_white": true
+    },
+    {
+      "id": "hair",
+      "file": "templates/parts/hair_black.png",
+      "x": 175,
+      "y": 10,
+      "scale": 1.0,
+      "key_white": true
+    }
+  ]
+}

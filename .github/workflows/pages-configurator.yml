@@ -1,10 +1,12 @@
-name: Pages — configurator
+name: Pages — site
 
 on:
   push:
     branches: [main]
     paths:
       - "configurator/**"
+      - "compositor/**"
+      - "site/**"
       - ".github/workflows/pages-configurator.yml"
   workflow_dispatch:
 
@@ -14,7 +16,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-configurator
+  group: pages-site
   cancel-in-progress: true
 
 jobs:
@@ -25,9 +27,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Build Pages bundle
+        run: |
+          mkdir -p _site
+          cp -r configurator _site/configurator
+          cp -r compositor _site/compositor
+          cp site/index.html _site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: configurator
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

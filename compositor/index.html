@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Compose — game-live-v3</title>
+  <link rel="stylesheet" href="compositor.css" />
+</head>
+<body>
+  <header>
+    <h1>Сборка персонажа</h1>
+    <p class="lede">Загрузите body → head → hair, подгоните слайдерами, скачайте <code>assemble.json</code> и PNG.</p>
+  </header>
+
+  <main class="layout">
+    <section class="panel preview-panel">
+      <canvas id="canvas" width="512" height="768"></canvas>
+      <p class="hint">Серый фон только для превью. Экспорт PNG — прозрачный.</p>
+    </section>
+
+    <section class="panel controls">
+      <label class="field">
+        <span>Ширина холста</span>
+        <input type="number" id="canvasW" value="512" min="256" max="2048" />
+      </label>
+      <label class="field">
+        <span>Высота холста</span>
+        <input type="number" id="canvasH" value="768" min="256" max="2048" />
+      </label>
+      <label class="field checkbox">
+        <input type="checkbox" id="keyWhite" checked />
+        <span>Убрать белый/светлый фон слоёв (key)</span>
+      </label>
+
+      <div id="layerControls"></div>
+
+      <div class="actions">
+        <button type="button" id="btnRedraw" class="primary">Обновить</button>
+        <button type="button" id="btnJson">Скачать assemble.json</button>
+        <button type="button" id="btnPng">Скачать PNG</button>
+      </div>
+
+      <label class="field">
+        <span>assemble.json</span>
+        <textarea id="jsonOut" rows="14" readonly spellcheck="false"></textarea>
+      </label>
+    </section>
+  </main>
+
+  <script type="module" src="compositor.js"></script>
+</body>
+</html>
