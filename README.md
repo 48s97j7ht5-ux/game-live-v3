@@ -21,6 +21,10 @@ python3 scripts/compose.py characters/test/assemble.json
 
 Слой **body** часто без key (серый фон); **head/hair** — включите «key white», если фон белый.
 
+## Композитор лица (спецификация)
+
+Порядок слоёв **head → face → cosmetics → hair**, face-first, затем стыковка с телом — см. **[`docs/face-compositor.md`](docs/face-compositor.md)**.
+
 ## MPFB configurator (legacy)
 
 [`configurator/`](configurator/) — JSON для старого MPFB-пайплайна, если понадобится.
