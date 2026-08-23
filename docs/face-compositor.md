@@ -15,11 +15,33 @@
 | # | ID слоя | Содержимое | Примечание |
 |---|---------|------------|------------|
 | 1 | `head` | **Голова** — силуэт, кожа, ухо, шея до линии стыка с телом | Без черт или с минимумом; «манекен» |
-| 2 | `face` | **Черты лица** — глаза, брови, нос, рот | Эмоции = варианты этого слоя (или набор мелких PNG) |
+| 2 | **Черты лица** (отдельные файлы) | см. таблицу ниже | Не один PNG «face», а **4+ файла** |
 | 3 | `cosmetics` | **Косметика и украшения** — румяна, помада, тени, пирсинг, серьги | Часто с прозрачностью; можно несколько файлов позже |
 | 4 | `hair` | **Волосы** | Поверх лба; cutout под лицо, если один PNG |
 
-Склейка: **1 → 2 → 3 → 4** (нижний слой рисуется первым).
+### Слой 2 — отдельные файлы (порядок склейки)
+
+Каждая черта — **свой PNG** на общем холсте (один ракурс ¾, одна сетка координат).
+
+| Порядок | ID | Файлы (пример) | Примечание |
+|---------|-----|----------------|------------|
+| 2a | `eyes` | `templates/face/eyes/brown_neutral.png` | Форма + радужка; варианты цвета/формы |
+| 2b | `brows` | `templates/face/brows/medium_neutral.png` | Поверх глаз |
+| 2c | `nose` | `templates/face/nose/default_3q.png` | Обычно один archetype на персонажа |
+| 2d | `lips` | `templates/face/lips/neutral_closed.png` | **Губы / рот**; эмоции чаще всего меняют **brows + lips** |
+
+Полная цепочка склейки:
+
+**head → eyes → brows → nose → lips → cosmetics → hair**
+
+У каждого слоя в JSON свои `x`, `y`, `scale` (после первой подгонки часто одинаковые `0, 0, 1`).
+
+### Эмоции при модульных чертах
+
+- Не обязательно 16 полных «лиц» — достаточно набора **`lips_*`** и **`brows_*`** (и при необходимости **`eyes_*`**).
+- Эмоциональный лист **4×4** можно **нарезать по зонам** (если нарисован целиком) или постепенно заменить отдельными файлами из Leonardo.
+- В DNA персонажа: `"lips": "smile_open"`, `"brows": "angry"`, `"eyes": "neutral"`.
+
 
 ### Расширения (когда появятся ассеты)
 
@@ -35,14 +57,29 @@
 
 ## Эмоции и «уникальные лица»
 
-- **Эмоция** не отдельная «голова целиком», а правило: меняются элементы **слоя 2** (брови, рот, иногда глаза).
+- **Эмоция** = комбинация **`brows` + `lips`** (± **`eyes`**), не монолитный слой `face`.
 - **Разные NPC** (комбинации без бесконечного Leonardo-combine):
   - несколько **`head` archetype** (форма);
-  - варианты **`face`** (глаза/брови);
+  - варианты **`eyes` / `brows` / `nose` / `lips`**;
   - **`cosmetics` / extras**;
   - **`hair`** + позже тело/одежда.
 
 Leonardo генерирует **PNG в папки**; комбинации — **compositor + JSON**, не один промпт «сделай всё».
+
+### Пример DNA (лицо)
+
+```json
+{
+  "head": "archetype_01",
+  "eyes": "green_wide",
+  "brows": "thin_neutral",
+  "nose": "default_3q",
+  "lips": "smirk",
+  "cosmetics": ["blush_light", "septum"],
+  "hair": "black_messy"
+}
+```
+
 
 ---
 
@@ -65,8 +102,32 @@ Leonardo генерирует **PNG в папки**; комбинации — **
       "key_white": true
     },
     {
-      "id": "face",
-      "file": "templates/face/emotions/neutral.png",
+      "id": "eyes",
+      "file": "templates/face/eyes/brown_neutral.png",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "key_white": true
+    },
+    {
+      "id": "brows",
+      "file": "templates/face/brows/medium_neutral.png",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "key_white": true
+    },
+    {
+      "id": "nose",
+      "file": "templates/face/nose/default_3q.png",
+      "x": 0,
+      "y": 0,
+      "scale": 1,
+      "key_white": true
+    },
+    {
+      "id": "lips",
+      "file": "templates/face/lips/neutral_closed.png",
       "x": 0,
       "y": 0,
       "scale": 1,
@@ -103,21 +164,26 @@ Leonardo генерирует **PNG в папки**; комбинации — **
 ```text
 templates/face/
   head/           # слой 1 — archetype_*.png
-  features/       # слой 2 — eyes, mouth, … или emotions/*.png
-  cosmetics/      # слой 3 — makeup, jewelry
+  eyes/           # слой 2a
+  brows/          # слой 2b
+  nose/           # слой 2c
+  lips/           # слой 2d (губы / рот)
+  cosmetics/      # слой 3 — makeup, jewelry (можно несколько PNG в JSON)
   hair/           # слой 4
   hair_back/      # опционально
   accessories/    # опционально — поверх hair
+  emotions/       # опционально: целые листы до нарезки на brows/lips/…
 ```
 
-Эмоциональный лист **4×4** → после нарезки кладётся в `templates/face/emotions/` (или `features/`).
+Старый вариант «один файл `face`» **не используем** — только модульные **eyes, brows, nose, lips**.
+
 
 ---
 
 ## Два этапа пайплайна
 
 ```text
-[Face compositor]  head + face + cosmetics + hair  →  face.png + face-assemble.json
+[Face compositor]  head + eyes + brows + nose + lips + cosmetics + hair  →  face.png + face-assemble.json
 [Body compositor]  body + face.png (по anchor_neck)  →  full_character.png
 ```
 
@@ -138,3 +204,4 @@ Full-body [`compositor/`](../compositor/) остаётся до появлени
 | Дата | Решение |
 |------|---------|
 | 2026-08-23 | Зафиксирован порядок слоёв: **1 head → 2 face → 3 cosmetics → 4 hair**; face-first, тело позже. |
+| 2026-08-23 | Слой **face** = отдельные файлы: **eyes → brows → nose → lips** (порядок склейки). |
