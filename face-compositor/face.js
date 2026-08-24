@@ -11,14 +11,14 @@ const LAYER_DEFS = [
 /** @type {Record<string, LayerState>} */
 const state = {};
 
-/** @typedef {{ img: HTMLImageElement | null, x: number, y: number, scale: number, key: boolean, opacity: number, fileName: string }} LayerState */
+/** @typedef {{ img: HTMLImageElement | null, x: number, y: number, scale: number, key: boolean, opacity: number, fileName: string, loadError: string | null }} LayerState */
 
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById("canvas"));
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 if (!ctx) throw new Error("No 2d context");
 
 const previewStage = /** @type {HTMLDivElement} */ (document.getElementById("previewStage"));
-let activeLayerId = "eyes";
+let activeLayerId = "head";
 /** @type {DragState | null} */
 let drag = null;
 let displayZoom = 2;
@@ -35,8 +35,15 @@ function initState() {
       key: def.keyDefault,
       opacity: def.opacityDefault ?? 1,
       fileName: `templates/face/${def.path}`,
+      loadError: null,
     };
   }
+}
+
+/** URL from site root (face-compositor/ → ../templates/...) */
+function assetUrl(filePath) {
+  const clean = filePath.replace(/^\.\//, "");
+  return new URL(`../${clean}`, window.location.href).href;
 }
 
 function applyDisplayZoom(z) {
@@ -60,6 +67,26 @@ function updateActiveLayerLabel() {
   el.innerHTML = `Слой для drag:<span>${def.label}</span>`;
 }
 
+function updateLoadStatus(extraMessage) {
+  const el = document.getElementById("loadStatus");
+  if (!el) return;
+  const loaded = LAYER_DEFS.filter((d) => state[d.id].img).length;
+  const errors = LAYER_DEFS.filter((d) => state[d.id].loadError).map(
+    (d) => `${d.label}: ${state[d.id].loadError}`,
+  );
+  let text = `Слоёв с картинкой: ${loaded} из ${LAYER_DEFS.length}.`;
+  if (loaded === 0) {
+    text +=
+      " На каждой вкладке нажмите «PNG» и выберите файл с телефона. JSON задаёт только координаты — картинки он не подставляет.";
+    el.classList.add("warn");
+  } else {
+    el.classList.remove("warn");
+  }
+  if (errors.length) text += ` Не найдено в репо: ${errors.join("; ")}.`;
+  if (extraMessage) text += ` ${extraMessage}`;
+  el.textContent = text;
+}
+
 function canvasPoint(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
@@ -77,12 +104,17 @@ function keyImageData(data, threshold) {
     const b = data[i + 2];
     if (r >= threshold && g >= threshold && b >= threshold) {
       data[i + 3] = 0;
-      continue;
-    }
-    if (Math.abs(r - g) < 12 && Math.abs(g - b) < 12 && r >= 200) {
-      data[i + 3] = 0;
     }
   }
+}
+
+function countVisiblePixels() {
+  const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let n = 0;
+  for (let i = 3; i < id.data.length; i += 4) {
+    if (id.data[i] > 8) n++;
+  }
+  return n;
 }
 
 function drawLayer(img, x, y, scale, keyLayer, globalKey, opacity) {
@@ -96,9 +128,13 @@ function drawLayer(img, x, y, scale, keyLayer, globalKey, opacity) {
   octx.imageSmoothingEnabled = false;
   octx.drawImage(img, 0, 0, w, h);
   if (globalKey && keyLayer) {
-    const id = octx.getImageData(0, 0, w, h);
-    keyImageData(id.data, 248);
-    octx.putImageData(id, 0, 0);
+    try {
+      const id = octx.getImageData(0, 0, w, h);
+      keyImageData(id.data, 248);
+      octx.putImageData(id, 0, 0);
+    } catch {
+      /* blob / CORS — рисуем без key */
+    }
   }
   ctx.save();
   ctx.globalAlpha = opacity;
@@ -116,6 +152,86 @@ function draw() {
     const s = state[def.id];
     if (!s.img) continue;
     drawLayer(s.img, s.x, s.y, s.scale, s.key, globalKey, s.opacity);
+  }
+
+  if (LAYER_DEFS.some((d) => state[d.id].img)) {
+    try {
+      const vis = countVisiblePixels();
+      if (vis < 50) {
+        updateLoadStatus("На холсте почти ничего не видно — выключите «убрать фон» или проверьте key для слоя.");
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+function fitLayerToCanvas(s, img) {
+  const cw = canvas.width;
+  const ch = canvas.height;
+  const scale = Math.min(1, cw / img.width, ch / img.height);
+  s.scale = Math.round(scale * 1000) / 1000;
+  const dw = img.width * s.scale;
+  const dh = img.height * s.scale;
+  s.x = Math.round((cw - dw) / 2);
+  s.y = Math.round((ch - dh) / 2);
+}
+
+/**
+ * @param {string} layerId
+ * @param {string} url
+ * @param {{ autoFit?: boolean, fileName?: string }} opts
+ */
+function loadImageForLayer(layerId, url, opts = {}) {
+  const s = state[layerId];
+  if (!s) return Promise.resolve(false);
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    if (!url.startsWith("blob:")) {
+      img.crossOrigin = "anonymous";
+    }
+    img.onload = async () => {
+      try {
+        if (img.decode) await img.decode();
+      } catch {
+        /* ok */
+      }
+      s.img = img;
+      s.loadError = null;
+      if (opts.fileName) s.fileName = opts.fileName;
+      if (opts.autoFit && s.x === 0 && s.y === 0 && s.scale === 1) {
+        fitLayerToCanvas(s, img);
+      }
+      draw();
+      refreshJson();
+      renderLayerTabs();
+      if (activeLayerId === layerId) renderLayerEditor();
+      updateLoadStatus();
+      resolve(true);
+    };
+    img.onerror = () => {
+      s.loadError = "файл не найден";
+      updateLoadStatus();
+      resolve(false);
+    };
+    img.src = url;
+  });
+}
+
+async function loadAllFromRepo(silent) {
+  const tasks = LAYER_DEFS.map((def) => {
+    const s = state[def.id];
+    const url = assetUrl(s.fileName);
+    return loadImageForLayer(def.id, url, { autoFit: false });
+  });
+  await Promise.all(tasks);
+  draw();
+  refreshJson();
+  renderLayerTabs();
+  renderLayerEditor();
+  if (!silent) {
+    updateLoadStatus("Обновлено из paths в JSON / templates/face/.");
   }
 }
 
@@ -171,7 +287,7 @@ function setActiveLayer(id) {
   renderLayerEditor();
 }
 
-function applySpec(spec) {
+async function applySpec(spec, loadImages) {
   if (spec.character_id) {
     /** @type {HTMLInputElement} */ (document.getElementById("characterId")).value = spec.character_id;
   }
@@ -190,10 +306,28 @@ function applySpec(spec) {
     if (typeof layer.opacity === "number") s.opacity = layer.opacity;
     if (layer.file) s.fileName = layer.file;
   }
-  draw();
   refreshJson();
   renderLayerTabs();
   renderLayerEditor();
+  if (loadImages) {
+    await loadAllFromRepo(true);
+  } else {
+    draw();
+    updateLoadStatus("JSON загружен. Нажмите «Из репо» или загрузите PNG на вкладках слоёв.");
+  }
+}
+
+async function loadCharacterFromRepo(characterId) {
+  const url = assetUrl(`characters/${characterId}/face-assemble.json`);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(String(res.status));
+    const spec = await res.json();
+    await applySpec(spec, true);
+    updateLoadStatus(`Профиль ${characterId} из репо.`);
+  } catch {
+    updateLoadStatus(`Не найден characters/${characterId}/face-assemble.json — загрузите PNG вручную.`);
+  }
 }
 
 function renderLayerTabs() {
@@ -219,24 +353,34 @@ function renderLayerEditor() {
   if (!def) return;
   const s = state[def.id];
 
+  if (s.img) {
+    const meta = document.createElement("p");
+    meta.className = "layer-meta";
+    meta.textContent = `${s.fileName} · ${s.img.width}×${s.img.height}px`;
+    root.appendChild(meta);
+  } else if (s.loadError) {
+    const meta = document.createElement("p");
+    meta.className = "layer-meta warn";
+    meta.textContent = `Не загружено (${s.loadError}). Выберите PNG ниже.`;
+    root.appendChild(meta);
+  }
+
   const fileLab = document.createElement("label");
-  fileLab.innerHTML = "<span>PNG</span>";
+  fileLab.innerHTML = "<span>PNG с телефона / файлов</span>";
   const fileInput = document.createElement("input");
   fileInput.type = "file";
-  fileInput.accept = "image/png,image/webp,image/jpeg";
+  fileInput.accept = "image/png,image/webp,image/jpeg,image/*";
   fileInput.addEventListener("change", () => {
     const f = fileInput.files?.[0];
     if (!f) return;
     const url = URL.createObjectURL(f);
-    const img = new Image();
-    img.onload = () => {
-      s.img = img;
-      s.fileName = `templates/face/${def.id}/${f.name}`;
-      draw();
-      refreshJson();
-      renderLayerTabs();
-    };
-    img.src = url;
+    const autoFit = s.x === 0 && s.y === 0 && s.scale === 1;
+    loadImageForLayer(def.id, url, {
+      autoFit,
+      fileName: `templates/face/${def.id}/${f.name}`,
+    }).then((ok) => {
+      if (!ok) window.alert(`Не удалось открыть «${f.name}». Попробуйте PNG или выключите key.`);
+    });
   });
   fileLab.appendChild(fileInput);
   root.appendChild(fileLab);
@@ -297,7 +441,7 @@ function renderLayerEditor() {
     refreshJson();
   });
   keyLab.appendChild(keyBox);
-  keyLab.appendChild(document.createTextNode(" Key фона для слоя"));
+  keyLab.appendChild(document.createTextNode(" Key белого фона для слоя"));
   root.appendChild(keyLab);
 }
 
@@ -351,8 +495,15 @@ document.querySelectorAll(".zoom-buttons button").forEach((btn) => {
   });
 });
 
-document.getElementById("keyWhite").addEventListener("change", draw);
+document.getElementById("keyWhite").addEventListener("change", () => {
+  draw();
+  updateLoadStatus();
+});
 document.getElementById("characterId").addEventListener("input", refreshJson);
+
+document.getElementById("btnReloadRepo").addEventListener("click", () => {
+  loadAllFromRepo(false);
+});
 
 document.getElementById("btnLoadJson").addEventListener("click", () => {
   /** @type {HTMLInputElement} */ (document.getElementById("jsonFile")).click();
@@ -363,8 +514,8 @@ document.getElementById("jsonFile").addEventListener("change", () => {
   const f = input.files?.[0];
   if (!f) return;
   f.text()
-    .then((text) => {
-      applySpec(JSON.parse(text));
+    .then(async (text) => {
+      await applySpec(JSON.parse(text), true);
     })
     .catch(() => {
       window.alert("Не удалось прочитать JSON");
@@ -399,5 +550,15 @@ renderLayerEditor();
 updateActiveLayerLabel();
 refreshJson();
 draw();
+updateLoadStatus();
+
+const bootParams = new URLSearchParams(window.location.search);
+const bootId =
+  bootParams.get("character") || bootParams.get("id") || /** @type {HTMLInputElement} */ (document.getElementById("characterId")).value.trim();
+if (bootId) {
+  loadCharacterFromRepo(bootId);
+} else {
+  loadAllFromRepo(true);
+}
 
 export {};

@@ -38,6 +38,7 @@
       </div>
     </div>
     <p class="tip">Выберите слой ниже → водите пальцем или стилусом по картинке. Так проще целиться, чем ползунками X/Y.</p>
+    <p class="status" id="loadStatus" role="status">Слоёв с картинкой: 0. Загрузите PNG на вкладке слоя или положите файлы в <code>templates/face/</code> в репо.</p>
   </section>
 
   <section class="toolbar">
@@ -46,7 +47,8 @@
       <span>Убрать белый / светло-серый фон</span>
     </label>
     <div class="toolbar-actions">
-      <button type="button" id="btnLoadJson" class="btn ghost">Загрузить JSON</button>
+      <button type="button" id="btnReloadRepo" class="btn ghost">Из репо</button>
+      <button type="button" id="btnLoadJson" class="btn ghost">JSON</button>
       <button type="button" id="btnPng" class="btn primary">PNG</button>
       <button type="button" id="btnJson" class="btn">JSON</button>
       <input type="file" id="jsonFile" accept="application/json,.json" hidden />

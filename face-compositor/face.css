@@ -156,6 +156,27 @@ h1 {
   cursor: grabbing;
 }
 
+.status {
+  margin: 0.45rem 0.25rem 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink);
+  padding: 0.45rem 0.55rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, #fff);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+}
+
+.status.warn {
+  background: #fff4e6;
+  border-color: #f0c987;
+  color: #5c4a32;
+}
+
+.status code {
+  font-size: 0.72rem;
+}
+
 .tip {
   margin: 0.55rem 0.2rem 0;
   font-size: 0.78rem;
@@ -275,6 +296,16 @@ h1 {
 
 .layer-editor input[type="range"] {
   accent-color: var(--accent);
+}
+
+.layer-meta {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.layer-meta.warn {
+  color: #8a5a20;
 }
 
 .json-panel {
