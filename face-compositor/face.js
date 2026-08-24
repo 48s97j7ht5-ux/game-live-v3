@@ -187,6 +187,51 @@ function shouldAutoFitLayer(s, img) {
   return layerVisibleFraction(s, img) < 0.08;
 }
 
+function contentBounds(img, keyLayer, globalKey) {
+  const w = img.width;
+  const h = img.height;
+  const off = document.createElement("canvas");
+  off.width = w;
+  off.height = h;
+  const octx = off.getContext("2d");
+  if (!octx) return null;
+  octx.drawImage(img, 0, 0);
+  let id;
+  try {
+    id = octx.getImageData(0, 0, w, h);
+  } catch {
+    return null;
+  }
+  if (globalKey && keyLayer) {
+    keyImageData(id.data, 248);
+  }
+  let minX = w;
+  let minY = h;
+  let maxX = -1;
+  let maxY = -1;
+  const data = id.data;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const a = data[(y * w + x) * 4 + 3];
+      if (a > 12) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < minX) return null;
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    cx: (minX + maxX + 1) / 2,
+    cy: (minY + maxY + 1) / 2,
+  };
+}
+
 function centerActiveLayer() {
   const s = state[activeLayerId];
   if (!s?.img) return;
@@ -194,14 +239,23 @@ function centerActiveLayer() {
   draw();
   refreshJson();
   renderLayerEditor();
-  updateLoadStatus("Слой отцентрирован и вписан в холст.");
+  updateLoadStatus(
+    "Центр по содержимому слоя (не по краям PNG). X≈0 бывает только если лицо уже в середине файла.",
+  );
 }
 
 function fitLayerToCanvas(s, img) {
   const cw = canvas.width;
   const ch = canvas.height;
+  const globalKey = /** @type {HTMLInputElement} */ (document.getElementById("keyWhite")).checked;
   const scale = Math.min(1, cw / img.width, ch / img.height);
   s.scale = Math.round(scale * 1000) / 1000;
+  const bounds = contentBounds(img, s.key, globalKey);
+  if (bounds) {
+    s.x = Math.round(cw / 2 - bounds.cx * s.scale);
+    s.y = Math.round(ch / 2 - bounds.cy * s.scale);
+    return;
+  }
   const dw = img.width * s.scale;
   const dh = img.height * s.scale;
   s.x = Math.round((cw - dw) / 2);
@@ -421,7 +475,7 @@ function renderLayerEditor() {
     const centerBtn = document.createElement("button");
     centerBtn.type = "button";
     centerBtn.className = "btn ghost";
-    centerBtn.textContent = "По центру (вписать)";
+    centerBtn.textContent = "По центру (по содержимому)";
     centerBtn.addEventListener("click", centerActiveLayer);
     row.appendChild(centerBtn);
     root.appendChild(row);
