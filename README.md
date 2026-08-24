@@ -32,6 +32,8 @@ python3 scripts/compose.py characters/test/assemble.json
 
 Спецификация и стыковка с телом (`anchor_neck`) — **[`docs/face-compositor.md`](docs/face-compositor.md)**.
 
+Опционально: **[`docs/magic-pixel-api.md`](docs/magic-pixel-api.md)** — ключ API только в Secrets окружения, не в git.
+
 ## MPFB configurator (legacy)
 
 [`configurator/`](configurator/) — JSON для старого MPFB-пайплайна, если понадобится.
