@@ -6,6 +6,7 @@ on:
     paths:
       - "configurator/**"
       - "compositor/**"
+      - "face-compositor/**"
       - "site/**"
       - ".github/workflows/pages-configurator.yml"
   workflow_dispatch:
@@ -32,6 +33,7 @@ jobs:
           mkdir -p _site
           cp -r configurator _site/configurator
           cp -r compositor _site/compositor
+          cp -r face-compositor _site/face-compositor
           cp site/index.html _site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

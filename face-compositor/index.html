@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Лицо — game-live-v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="face.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <p class="kicker">game-live-v3</p>
+      <h1>Композитор лица</h1>
+    </div>
+    <label class="id-field">
+      <span>ID</span>
+      <input type="text" id="characterId" value="kat" maxlength="32" />
+    </label>
+  </header>
+
+  <section class="stage-wrap">
+    <div class="zoom-bar">
+      <p class="active-layer" id="activeLayerLabel">Слой: глаза</p>
+      <div class="zoom-buttons" role="group" aria-label="Масштаб превью">
+        <button type="button" data-zoom="1">1×</button>
+        <button type="button" data-zoom="1.5">1.5×</button>
+        <button type="button" data-zoom="2" class="active">2×</button>
+        <button type="button" data-zoom="2.5">2.5×</button>
+        <button type="button" data-zoom="3">3×</button>
+      </div>
+    </div>
+    <div class="preview-scroll" id="previewScroll">
+      <div class="preview-stage" id="previewStage">
+        <canvas id="canvas" width="1024" height="1024"></canvas>
+      </div>
+    </div>
+    <p class="tip">Выберите слой ниже → водите пальцем или стилусом по картинке. Так проще целиться, чем ползунками X/Y.</p>
+  </section>
+
+  <section class="toolbar">
+    <label class="toggle">
+      <input type="checkbox" id="keyWhite" checked />
+      <span>Убрать белый / светло-серый фон</span>
+    </label>
+    <div class="toolbar-actions">
+      <button type="button" id="btnLoadJson" class="btn ghost">Загрузить JSON</button>
+      <button type="button" id="btnPng" class="btn primary">PNG</button>
+      <button type="button" id="btnJson" class="btn">JSON</button>
+      <input type="file" id="jsonFile" accept="application/json,.json" hidden />
+    </div>
+  </section>
+
+  <section class="layers-panel">
+    <h2>Слои</h2>
+    <div id="layerTabs" class="layer-tabs"></div>
+    <div id="layerEditor" class="layer-editor"></div>
+  </section>
+
+  <details class="json-panel">
+    <summary>JSON</summary>
+    <textarea id="jsonOut" rows="12" readonly spellcheck="false"></textarea>
+  </details>
+
+  <script type="module" src="face.js"></script>
+</body>
+</html>

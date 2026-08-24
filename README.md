@@ -21,9 +21,16 @@ python3 scripts/compose.py characters/test/assemble.json
 
 Слой **body** часто без key (серый фон); **head/hair** — включите «key white», если фон белый.
 
-## Композитор лица (спецификация)
+## Композитор лица (7 слоёв)
 
-Порядок слоёв **head → face → cosmetics → hair**, face-first, затем стыковка с телом — см. **[`docs/face-compositor.md`](docs/face-compositor.md)**.
+1. PNG в [`templates/face/`](templates/face/) (см. README там) или загрузка файлов в браузере.
+2. **Телефон / браузер:** [`face-compositor/index.html`](face-compositor/index.html) (GitHub Pages → «Лицо»).
+   - Слои: head → eyes → brows → nose → lips → cosmetics → hair.
+   - Выберите слой, **тащите на превью** (масштаб превью до **3×** для прицеливания).
+   - Скачайте `face-assemble.json` и `face-<id>.png`.
+3. Пример: [`characters/kat/face-assemble.json`](characters/kat/face-assemble.json).
+
+Спецификация и стыковка с телом (`anchor_neck`) — **[`docs/face-compositor.md`](docs/face-compositor.md)**.
 
 ## MPFB configurator (legacy)
 
@@ -31,7 +38,7 @@ python3 scripts/compose.py characters/test/assemble.json
 
 ## GitHub Pages
 
-Workflow `pages-configurator.yml` публикует `site/` (ссылки на compositor и configurator).
+Workflow `pages-configurator.yml` публикует `site/` (face-compositor, compositor, configurator).
 
 ## Схема assemble
 
