@@ -1,22 +1,27 @@
 # Kat — референс (хранение)
 
-Сюда складываем **цельные спрайты** из Leonardo / экспорта, пока не нарезаны на слои.
+Сюда складываем **экспорты Leonardo**, пока не разложены по `templates/`.
 
-## Файл
+## Файлы (загрузите PNG сюда)
 
 | Файл | Описание |
 |------|----------|
-| `kat-fullbody-neutral-1024.png` | Полное тело, нейтральная поза, ¾, ~1024×1024. Белая майка, серые шорты, чёрные волосы/носки. Персонаж **по центру кадра** (для этого экспорта X≈0 на body-compositor; у отдельных head/lips PNG отступы могут быть другими). |
+| `kat-fullbody-neutral-1024.png` | **Целиком:** одежда, волосы, поза ¾. Персонаж часто **по центру кадра** → на compositor X≈0. |
+| `kat-head-base-1024.png` | **База головы/шеи:** лысая «кукла», без черт лица, серый фон. Фигура **смещена вправо** внутри квадрата — слева широкое пустое поле → в face-compositor визуальный центр часто **X ≈ −300…−400** (это нормально: центрируем по содержимому, не по краю PNG). |
 
-Загрузите PNG в эту папку через GitHub (Add file) или с телефона в репо.
+GitHub → `characters/kat/reference/` → **Add file** → выберите PNG с телефона.
 
-## Не путать с
+## Куда потом класть для сборки
 
-- `templates/face/*` — модульное **лицо** (7 слоёв).
-- `templates/parts/*` — body / head / hair для [`compositor/`](../../../compositor/).
-- `characters/kat/face-assemble.json` — только координаты лица, не картинка.
+| Назначение | Путь в репо |
+|------------|-------------|
+| Слой `head` в лице | `templates/face/head/` (например `kat_head_base.png`) |
+| Тело | `templates/parts/body/` |
+| Волосы | `templates/face/hair/` или `templates/parts/hair/` |
 
-## Дальше
+JSON координат: `characters/kat/face-assemble.json` — обновить поле `file` после переименования.
 
-- Body: [`compositor/`](https://48s97j7ht5-ux.github.io/game-live-v3/compositor/) или нарезка на `body_base` + волосы.
-- Лицо: отдельные PNG в `templates/face/` + [`face-compositor/`](https://48s97j7ht5-ux.github.io/game-live-v3/face-compositor/).
+## Инструменты
+
+- Лицо (7 слоёв): [face-compositor](https://48s97j7ht5-ux.github.io/game-live-v3/face-compositor/)
+- Тело: [compositor](https://48s97j7ht5-ux.github.io/game-live-v3/compositor/)
