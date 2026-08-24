@@ -11,6 +11,97 @@ const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById("canvas
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 if (!ctx) throw new Error("No 2d context");
 
+/** @type {string | null} */
+let activeLayerId = LAYER_DEFS[0]?.id ?? null;
+
+/** @type {{ layerId: string, startPx: number, startPy: number, startX: number, startY: number } | null} */
+let drag = null;
+
+function canvasPoint(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY,
+  };
+}
+
+function syncSliders(layerId) {
+  const s = state[layerId];
+  if (!s) return;
+  for (const key of ["x", "y", "scale"]) {
+    const range = document.getElementById(`range-${layerId}-${key}`);
+    const out = document.getElementById(`out-${layerId}-${key}`);
+    const val = /** @type {number} */ (s[/** @type {"x"|"y"|"scale"} */ (key)]);
+    if (range instanceof HTMLInputElement) {
+      range.value = String(val);
+    }
+    if (out) out.textContent = String(val);
+  }
+}
+
+function fillActiveLayerSelect() {
+  const sel = /** @type {HTMLSelectElement} */ (document.getElementById("activeLayer"));
+  sel.replaceChildren();
+  for (const def of LAYER_DEFS) {
+    const opt = document.createElement("option");
+    opt.value = def.id;
+    opt.textContent = def.label;
+    sel.appendChild(opt);
+  }
+  sel.value = activeLayerId ?? LAYER_DEFS[0].id;
+  activeLayerId = sel.value;
+  sel.addEventListener("change", () => {
+    activeLayerId = sel.value;
+  });
+}
+
+function setupCanvasDrag() {
+  canvas.addEventListener("pointerdown", (e) => {
+    if (!activeLayerId || !state[activeLayerId]?.img) return;
+    const s = state[activeLayerId];
+    const p = canvasPoint(e.clientX, e.clientY);
+    drag = {
+      layerId: activeLayerId,
+      startPx: p.x,
+      startPy: p.y,
+      startX: s.x,
+      startY: s.y,
+    };
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add("dragging");
+    e.preventDefault();
+  });
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const s = state[drag.layerId];
+    if (!s) return;
+    const p = canvasPoint(e.clientX, e.clientY);
+    s.x = Math.round(drag.startX + (p.x - drag.startPx));
+    s.y = Math.round(drag.startY + (p.y - drag.startPy));
+    syncSliders(drag.layerId);
+    draw();
+    refreshJson();
+    e.preventDefault();
+  });
+
+  const endDrag = (e) => {
+    if (!drag) return;
+    drag = null;
+    canvas.classList.remove("dragging");
+    try {
+      canvas.releasePointerCapture(e.pointerId);
+    } catch {
+      /* already released */
+    }
+  };
+
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+}
+
 function initState() {
   for (const def of LAYER_DEFS) {
     state[def.id] = {
@@ -68,6 +159,7 @@ function buildLayerUI() {
       lab.innerHTML = `<span>${label} <output id="out-${def.id}-${key}">${s[val]}</output></span>`;
       const range = document.createElement("input");
       range.type = "range";
+      range.id = `range-${def.id}-${key}`;
       range.min = String(min);
       range.max = String(max);
       range.step = String(step);
@@ -202,6 +294,8 @@ document.getElementById("btnPng").addEventListener("click", () => {
 });
 
 initState();
+fillActiveLayerSelect();
+setupCanvasDrag();
 buildLayerUI();
 refreshJson();
 draw();

@@ -9,13 +9,17 @@
 <body>
   <header>
     <h1>Сборка персонажа</h1>
-    <p class="lede">Загрузите body → head → hair, подгоните слайдерами, скачайте <code>assemble.json</code> и PNG.</p>
+    <p class="lede">Загрузите body → head → hair. Двигайте выбранный слой <strong>пальцем или стилусом</strong> на превью (или слайдерами).</p>
   </header>
 
   <main class="layout">
     <section class="panel preview-panel">
       <canvas id="canvas" width="1024" height="1024"></canvas>
-      <p class="hint">Серый фон только для превью. Экспорт PNG — прозрачный.</p>
+      <label class="field drag-bar">
+        <span>Слой для перетаскивания</span>
+        <select id="activeLayer"></select>
+      </label>
+      <p class="hint">Коснитесь превью и ведите — двигается выбранный слой. Серый фон только для превью; экспорт PNG — прозрачный.</p>
     </section>
 
     <section class="panel controls">

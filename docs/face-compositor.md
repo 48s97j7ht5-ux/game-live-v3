@@ -189,6 +189,10 @@ templates/face/
 
 Full-body [`compositor/`](../compositor/) остаётся до появления face-compositor и body-anchor; новая работа по лицу ведётся по **этому документу**.
 
+### Управление на телефоне
+
+В [`compositor/`](../compositor/) (и в будущем **face-compositor**): выбор активного слоя + **перетаскивание пальцем / стилусом** на превью (Pointer Events). Масштаб — слайдер **Scale** (pinch можно добавить позже).
+
 ---
 
 ## Прозрачность и фон
