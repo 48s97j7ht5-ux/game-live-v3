@@ -308,6 +308,14 @@ h1 {
   color: #8a5a20;
 }
 
+.layer-actions {
+  margin-bottom: 0.65rem;
+}
+
+.layer-actions .btn {
+  width: 100%;
+}
+
 .json-panel {
   margin: 0 0.75rem 2rem;
   font-size: 0.85rem;

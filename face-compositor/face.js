@@ -166,6 +166,37 @@ function draw() {
   }
 }
 
+function layerVisibleFraction(s, img) {
+  const x0 = s.x;
+  const y0 = s.y;
+  const x1 = s.x + img.width * s.scale;
+  const y1 = s.y + img.height * s.scale;
+  const ix0 = Math.max(0, x0);
+  const iy0 = Math.max(0, y0);
+  const ix1 = Math.min(canvas.width, x1);
+  const iy1 = Math.min(canvas.height, y1);
+  const iw = Math.max(0, ix1 - ix0);
+  const ih = Math.max(0, iy1 - iy0);
+  const inter = iw * ih;
+  const total = img.width * img.height * s.scale * s.scale;
+  return total > 0 ? inter / total : 0;
+}
+
+function shouldAutoFitLayer(s, img) {
+  if (s.x === 0 && s.y === 0 && s.scale === 1) return true;
+  return layerVisibleFraction(s, img) < 0.08;
+}
+
+function centerActiveLayer() {
+  const s = state[activeLayerId];
+  if (!s?.img) return;
+  fitLayerToCanvas(s, s.img);
+  draw();
+  refreshJson();
+  renderLayerEditor();
+  updateLoadStatus("Слой отцентрирован и вписан в холст.");
+}
+
 function fitLayerToCanvas(s, img) {
   const cw = canvas.width;
   const ch = canvas.height;
@@ -200,7 +231,7 @@ function loadImageForLayer(layerId, url, opts = {}) {
       s.img = img;
       s.loadError = null;
       if (opts.fileName) s.fileName = opts.fileName;
-      if (opts.autoFit && s.x === 0 && s.y === 0 && s.scale === 1) {
+      if (opts.autoFit && shouldAutoFitLayer(s, img)) {
         fitLayerToCanvas(s, img);
       }
       draw();
@@ -223,7 +254,7 @@ async function loadAllFromRepo(silent) {
   const tasks = LAYER_DEFS.map((def) => {
     const s = state[def.id];
     const url = assetUrl(s.fileName);
-    return loadImageForLayer(def.id, url, { autoFit: false });
+    return loadImageForLayer(def.id, url, { autoFit: true });
   });
   await Promise.all(tasks);
   draw();
@@ -374,9 +405,8 @@ function renderLayerEditor() {
     const f = fileInput.files?.[0];
     if (!f) return;
     const url = URL.createObjectURL(f);
-    const autoFit = s.x === 0 && s.y === 0 && s.scale === 1;
     loadImageForLayer(def.id, url, {
-      autoFit,
+      autoFit: true,
       fileName: `templates/face/${def.id}/${f.name}`,
     }).then((ok) => {
       if (!ok) window.alert(`Не удалось открыть «${f.name}». Попробуйте PNG или выключите key.`);
@@ -384,6 +414,18 @@ function renderLayerEditor() {
   });
   fileLab.appendChild(fileInput);
   root.appendChild(fileLab);
+
+  if (s.img) {
+    const row = document.createElement("div");
+    row.className = "layer-actions";
+    const centerBtn = document.createElement("button");
+    centerBtn.type = "button";
+    centerBtn.className = "btn ghost";
+    centerBtn.textContent = "По центру (вписать)";
+    centerBtn.addEventListener("click", centerActiveLayer);
+    row.appendChild(centerBtn);
+    root.appendChild(row);
+  }
 
   for (const [key, label, min, max, step] of [
     ["x", "X (или двигайте на превью)", -1024, 1024, 1],
