@@ -56,6 +56,18 @@ h1 { margin: 0 0 0.35rem; font-size: 1.35rem; }
   background: #9a9a9a;
   border-radius: 8px;
   image-rendering: pixelated;
+  touch-action: none;
+  cursor: grab;
+}
+
+#canvas.dragging {
+  cursor: grabbing;
+}
+
+.drag-bar {
+  width: 100%;
+  max-width: 20rem;
+  margin-top: 0.75rem;
 }
 
 .hint { font-size: 0.8rem; color: var(--muted); margin: 0.5rem 0 0; }
