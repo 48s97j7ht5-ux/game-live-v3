@@ -7,6 +7,8 @@ on:
       - "configurator/**"
       - "compositor/**"
       - "face-compositor/**"
+      - "templates/**"
+      - "characters/**"
       - "site/**"
       - ".github/workflows/pages-configurator.yml"
   workflow_dispatch:
@@ -34,6 +36,8 @@ jobs:
           cp -r configurator _site/configurator
           cp -r compositor _site/compositor
           cp -r face-compositor _site/face-compositor
+          cp -r templates _site/templates
+          cp -r characters _site/characters
           cp site/index.html _site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
