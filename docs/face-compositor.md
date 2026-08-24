@@ -4,8 +4,8 @@
 
 Связанные инструменты:
 
-- **Сейчас:** [`compositor/`](../compositor/) — сборка full-body (body / head / hair), legacy.
-- **План:** `face-compositor/` — четыре слоя лица по схеме ниже.
+- **Сейчас:** [`face-compositor/`](../face-compositor/) — модульное лицо (7 слоёв, drag, zoom превью до 3×).
+- **Сейчас:** [`compositor/`](../compositor/) — сборка full-body (body / head / hair).
 - **CLI:** [`scripts/compose.py`](../scripts/compose.py) — общий движок склейки PNG по JSON (подойдёт и для `face-assemble.json`).
 
 ---

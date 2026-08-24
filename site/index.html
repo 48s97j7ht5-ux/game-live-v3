@@ -5,13 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>game-live-v3</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
-    a { display: block; margin: 0.75rem 0; font-size: 1.1rem; }
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 40rem;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    a.primary { font-weight: 600; font-size: 1.15rem; }
+    a { display: block; margin: 0.65rem 0; }
+    p { color: #555; font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <h1>game-live-v3</h1>
-  <a href="compositor/">Сборка спрайта (compose)</a>
+  <p>Сборка персонажа для 2D / pixel life-sim.</p>
+  <a class="primary" href="face-compositor/">Лицо — 7 слоёв, drag, zoom до 3×</a>
+  <a href="compositor/">Тело: body + head + hair</a>
   <a href="configurator/">MPFB JSON (legacy)</a>
 </body>
 </html>
