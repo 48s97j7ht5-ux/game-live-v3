@@ -1,0 +1,4 @@
+{
+  "name": "game-live-v3",
+  "install": "python3 --version && (python3 -c 'import PIL' 2>/dev/null || pip install -r requirements.txt || true)"
+}
