@@ -139,7 +139,14 @@ def main() -> None:
     p_gen = sub.add_parser("generate", help="Start a generation, poll, download results")
     p_gen.add_argument("prompt")
     p_gen.add_argument("--negative-prompt", default="")
-    p_gen.add_argument("--model-id", default="", help="Leonardo model UUID (see `models` command)")
+    p_gen.add_argument(
+        "--model-id",
+        default="de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3",
+        help="Leonardo model UUID (see `models` command). Defaults to Phoenix 1.0 -- "
+        "the account default model ignored the prompt entirely in testing (asked for "
+        "a red apple, got an unrelated grey/red mosaic heart); Phoenix 1.0 followed "
+        "the same prompt correctly. Pass '' to use the account default instead.",
+    )
     p_gen.add_argument("--width", type=int, default=512)
     p_gen.add_argument("--height", type=int, default=512)
     p_gen.add_argument("--num-images", type=int, default=1)
