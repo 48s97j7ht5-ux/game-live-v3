@@ -39,7 +39,7 @@ def main() -> int:
     parser.add_argument("input")
     parser.add_argument("-o", "--output", help="Output PNG path (native size)")
     parser.add_argument("--downscale", type=int, default=6, help="Box downscale factor before quantizing")
-    parser.add_argument("--colors", type=int, default=28, help="Target palette size (project spec: <=32)")
+    parser.add_argument("--colors", type=int, default=32, help="Target palette size (project spec: <=32; tested safe floor ~12-16, breaks around 4)")
     parser.add_argument("--preview-scale", type=int, default=3, help="Nearest-neighbor upscale factor for a *_preview.png")
     args = parser.parse_args()
 
