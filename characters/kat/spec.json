@@ -1,0 +1,19 @@
+{
+  "schema": "game-live-v3/character-spec/1",
+  "id": "kat",
+  "display_name": "Kat",
+  "subject_category": "character",
+  "size": 256,
+  "color_policy": "32",
+  "density": "max",
+  "prompt": "Young woman game character, emo/goth-lite style, tan skin, athletic-slim build, messy black shoulder-length hair with bangs, three-quarter view standing pose, simple dark outfit, spiked black choker and wristbands, neutral calm expression, SNES 16-bit RPG sprite, flat cel shading, 1px dark outline",
+  "style_reference_id": null,
+  "generated": {
+    "asset_id": "0f9956e8-80de-404e-84cb-499001723af3",
+    "project_id": "cc932c01-9f3e-44af-8720-15fc6d7b3401",
+    "name": "kat-factory-test-256",
+    "generated_at": "2026-08-25",
+    "downloaded": false,
+    "note": "PNG живёт в библиотеке MagicPixel; скачивание в repo заблокировано egress-политикой этой сессии, см. docs/character-factory.md §3"
+  }
+}

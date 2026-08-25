@@ -1,0 +1,97 @@
+# Фабрика персонажей (MagicPixel MCP)
+
+Автоматизированная замена ручному копипасту промптов в Gemini
+(см. [`gemini-pixel-prompts.md`](gemini-pixel-prompts.md), которая остаётся
+как fallback, если MagicPixel недоступен).
+
+**Как это работает:** в Claude-сессии, подключённой к MagicPixel (MCP-коннектор,
+не REST — `scripts/magic_pixel.py` остаётся черновиком на случай, если позже
+понадобится прямой API), есть инструменты `generate_pixel_art`,
+`generate_variants`, `generate_directions`, `apply_with_ai`. Проверено вживую:
+2026-08-25, персонаж `kat` сгенерирован с нуля по текстовому промпту за ~11 сек,
+4 кредита, результат — `characters/kat/spec.json` → `generated.asset_id`.
+
+## 1. Спека персонажа (`characters/<id>/spec.json`)
+
+```json
+{
+  "schema": "game-live-v3/character-spec/1",
+  "id": "kat",
+  "display_name": "Kat",
+  "subject_category": "character",
+  "size": 256,
+  "color_policy": "32",
+  "density": "max",
+  "prompt": "Young woman game character, emo/goth-lite style, tan skin, athletic-slim build, messy black shoulder-length hair with bangs, three-quarter view standing pose, simple dark outfit, spiked black choker and wristbands, neutral calm expression, SNES 16-bit RPG sprite, flat cel shading, 1px dark outline",
+  "style_reference_id": null,
+  "generated": {
+    "asset_id": "0f9956e8-80de-404e-84cb-499001723af3",
+    "project_id": "cc932c01-9f3e-44af-8720-15fc6d7b3401",
+    "downloaded": false
+  }
+}
+```
+
+Поля `size` / `color_policy` / `density` идут **отдельно от текста промпта** —
+не пишите в `prompt` вещи вроде «64x64» или «no anti-aliasing», конвейер
+MagicPixel сам это накладывает по этим полям (в отличие от Gemini-промптов,
+где это приходилось прописывать текстом).
+
+Соответствие размеров игре: старый пайплайн держал canvas 512×512 с ростом
+персонажа ~300px. Для «однократный full-body спрайт без слоёв» удобнее и
+дешевле **256×256** (Lite-тир, ~4 кредита, density всегда Max) — рост
+персонажа в кадре получается около 200px, что и было целью. Для послойного
+лица (см. `face-assemble.json`, 7 слоёв) размер холста по-прежнему держим
+одинаковым для всех слоёв одного персонажа.
+
+## 2. Генерация (в Claude-сессии с MagicPixel)
+
+1. Проверить доступ: `whoami`, `get_credit_balance`.
+2. `generate_pixel_art` с полями из spec.json (`prompt`, `size`,
+   `subject_category`, `color_policy`, `density`, опционально
+   `style_reference_id` если есть загруженный референс дизайна).
+3. Сохранить `asset_id`/`project_id` из ответа обратно в `spec.json` →
+   `generated`.
+4. Для набора одежды/цветов одного персонажа — `generate_variants`
+   (`creativity`: reskin/reskin creative/set/prompted).
+5. Для доп. ракурсов (спина, профиль) — `generate_directions`.
+6. Для «надеть предмет на персонажа» (объединить донора и цель) —
+   `apply_with_ai`.
+
+## 3. Скачивание PNG в репозиторий — известное ограничение
+
+`generate_pixel_art` / `get_asset` отдают картинку через сам MCP-вызов
+(её видно в диалоге), но **не файлом на диске**. Файл лежит в приватном
+хранилище MagicPixel (`https://sddsilidjhvtvejzvolx.supabase.co/storage/...`,
+подписанная ссылка с TTL ~1 час).
+
+В этой облачной среде (`agent proxy`, см. `/root/.ccr/README.md`) прямой
+`curl`/`WebFetch` на этот хост **блокируется политикой egress сессии**
+(403 на CONNECT) — это организационное ограничение, не баг конвейера.
+
+Варианты закрыть это:
+
+- **Разрешить домен** `sddsilidjhvtvejzvolx.supabase.co` (или домен из
+  актуальной подписанной ссылки) в настройках egress облачного окружения —
+  та же настройка, что уже описана в [`magic-pixel-api.md`](magic-pixel-api.md)
+  для REST-варианта («Network / egress → разрешите домен API»).
+- **Скачать вручную** из библиотеки MagicPixel (веб-приложение) и закоммитить
+  PNG в `characters/<id>/reference/` — как раньше делалось с экспортами Gemini.
+- Прогнать шаг скачивания в среде без этого ограничения (локально, обычный
+  Cursor-агент и т.д.).
+
+После скачивания: положить файл в `characters/<id>/reference/`, обновить
+`spec.json.generated.downloaded = true`, при необходимости разложить по
+`templates/parts/` или `templates/face/` и прогнать
+`scripts/compose.py` / face-compositor как обычно.
+
+## 4. Масштабирование фабрики (много персонажей)
+
+- Один `spec.json` = один персонаж/один слой.
+- Общий блок стиля (SNES 16-bit, flat cel shading, 1px outline, max 32
+  colors) держим одинаковым текстом во всех `prompt`, чтобы персонажи не
+  расходились по стилю — как раньше «якорь стиля» в Gemini-промптах.
+- Для устойчивого фирменного стиля — загрузить референс дизайна через
+  `upload_style_reference` один раз, затем указывать его
+  `style_reference_id` во всех новых `spec.json` (`reference_role: "style"`
+  чтобы брать только стиль, не конкретный сюжет референса).
