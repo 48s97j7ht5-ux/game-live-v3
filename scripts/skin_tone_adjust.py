@@ -16,14 +16,24 @@ from pathlib import Path
 from palette_classify import classify
 
 
-def retint_skin(data: dict, value_mult: float, sat_delta: float, hue_shift_deg: float) -> tuple[dict, list[int]]:
+def retint_skin(
+    data: dict, value_mult: float, sat_delta: float, hue_shift_deg: float, exclude: set[int] | None = None
+) -> tuple[dict, list[int]]:
+    """exclude: palette indices to force-skip even if classify() calls them
+    skin -- for colors genuinely shared between skin shadow and something
+    else (e.g. dark hair uses the exact same brown as deep skin shadow in
+    some art). classify() can't see WHERE a color is used, only what it is;
+    a shared color has no single correct automatic answer, so this is a
+    manual, per-asset override, not a smarter heuristic.
+    """
     palette = data["palette"]
+    exclude = exclude or set()
     skin_idx = []
 
     new_palette = []
     for i, (r, g, b, a) in enumerate(palette):
         label = classify(r, g, b, a)
-        if label != "skin (candidate)":
+        if label != "skin (candidate)" or i in exclude:
             new_palette.append([r, g, b, a])
             continue
 
@@ -47,10 +57,18 @@ def main() -> int:
     parser.add_argument("--value-mult", type=float, default=0.78, help="Multiply V (darker < 1.0 < lighter)")
     parser.add_argument("--sat-delta", type=float, default=0.06, help="Add to S (tan skin: usually more saturated)")
     parser.add_argument("--hue-shift", type=float, default=-4.0, help="Degrees to shift H (negative = warmer/browner)")
+    parser.add_argument(
+        "--exclude",
+        type=str,
+        default="",
+        help="Comma-separated palette indices to force-skip even if classify() flags them skin "
+        "(e.g. a brown shared between skin shadow and hair -- see palette_classify.py output)",
+    )
     args = parser.parse_args()
 
     data = json.loads(Path(args.sprite_json).read_text(encoding="utf-8"))
-    new_data, skin_idx = retint_skin(data, args.value_mult, args.sat_delta, args.hue_shift)
+    exclude = {int(s) for s in args.exclude.split(",") if s.strip()}
+    new_data, skin_idx = retint_skin(data, args.value_mult, args.sat_delta, args.hue_shift, exclude)
 
     out_path = Path(args.output) if args.output else Path(args.sprite_json).with_name(
         Path(args.sprite_json).stem.replace(".sprite", "") + ".tan.sprite.json"
