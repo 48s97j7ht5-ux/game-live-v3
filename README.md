@@ -1,6 +1,8 @@
 # game-live-v3
 
-2D персонажи ¾: части из Leonardo → сборка в браузере или скриптом.
+2D персонажи ¾: части из **Gemini** / Leonardo → сборка в браузере или скриптом.
+
+**Промпты Gemini (300 px рост, 512 canvas, 32 цвета):** [`docs/gemini-pixel-prompts.md`](docs/gemini-pixel-prompts.md)
 
 ## Compose (body + head + hair)
 
