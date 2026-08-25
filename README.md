@@ -34,7 +34,7 @@ python3 scripts/compose.py characters/test/assemble.json
 
 Спецификация и стыковка с телом (`anchor_neck`) — **[`docs/face-compositor.md`](docs/face-compositor.md)**.
 
-**Фабрика персонажей (автогенерация через MagicPixel MCP):** **[`docs/character-factory.md`](docs/character-factory.md)**.
+**Фабрика персонажей (автогенерация — MagicPixel AI или чистая процедурная геометрия без AI):** **[`docs/character-factory.md`](docs/character-factory.md)**.
 
 Опционально: **[`docs/magic-pixel-api.md`](docs/magic-pixel-api.md)** — только если позже включите API/Vite.
 
