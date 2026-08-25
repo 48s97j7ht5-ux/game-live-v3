@@ -132,15 +132,47 @@ Same head position as reference. No face features drawn.
 
 ---
 
+## Тест: тело целиком (скопировать в Gemini)
+
+Проверка **резкости и пропорций** перед нарезкой на слои. Прикрепите **лучший прошлый кадр Kat** как reference.
+
+```
+Strict retro pixel art sprite for a 2D life-simulation game.
+512x512 pixels, solid white background #FFFFFF only.
+One full-body character, exactly 300 pixels tall from feet to top of hair, centered in the frame with equal padding on all sides.
+Three-quarter view, body facing slightly to the right, head turned same direction.
+Integer pixel grid, crisp hard edges, NO anti-aliasing, NO blur, NO gradients, NO soft shading, NO semi-transparent edge pixels.
+Maximum 32 colors in the entire image total.
+Each area uses exactly 4 flat colors only: dark outline, shadow, mid base, highlight (skin, hair, swimsuit, shoes separately).
+1-pixel black or dark brown outer silhouette outline. SNES / Stardew Valley sprite quality, not illustration.
+
+Character: young woman, emo goth-lite style, tan skin, messy black shoulder-length hair with jagged bangs.
+Neutral calm face, simple pixel eyes and mouth, not anime huge eyes.
+Standing pose, hands on hips, elbows out.
+Outfit: plain dark navy bikini. Black spiked choker, black spiked wristbands on both wrists.
+Feet: simple black low-top sneakers with white soles and white laces (Vans-style), not barefoot.
+
+Avoid: anti-aliasing, fuzzy edges, painterly shading, color bleeding, smooth gradients, photorealistic, 3D, 4k, 8k, cinematic lighting, watermark, star icon, text, gray background, checkerboard, extra limbs, deformed hands.
+
+Same character as the attached reference image if provided. Match pixel crispness of reference; do not make image softer or higher resolution.
+```
+
+**Куда класть:** `characters/kat/reference/kat-fullbody-test-512.png`  
+**Проверка:** zoom 400% — контур должен быть **лесенкой**; персонаж **~300 px** высотой, не точка и не на весь 512 без полей.
+
+---
+
 ### 7. Full body — neutral (референс, не слой лица)
+
+См. блок **«Тест: тело целиком»** выше для полного текста. Краткая версия:
 
 ```
 [STYLE ANCHOR]
 [KAT DNA]
-Full body standing, hands on hips, barefoot OR simple black sneakers (pick one and keep for series).
-Dark bikini or swimsuit, spiked choker and wristbands.
-Full character 300px tall in 512x512 canvas. Reference sheet for proportions only.
+Full body standing, hands on hips, black sneakers white soles, dark bikini, spiked choker and wristbands.
+Full character exactly 300px tall in 512x512 canvas, centered.
 ```
+
 
 Файл: `characters/kat/reference/kat-fullbody-neutral-512.png`
 
