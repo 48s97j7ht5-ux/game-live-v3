@@ -32,8 +32,8 @@ def flatten_with_outliers(
     downscale: int,
     colors: int,
     alpha_threshold: int = 128,
-    outlier_threshold: int = 100,
-    max_outlier_colors: int = 6,
+    outlier_threshold: int = 60,
+    max_outlier_colors: int = 12,
     cluster_bucket: int = 20,
 ) -> Image.Image:
     """Like flatten(), but pixels whose color is far from every quantized
@@ -155,8 +155,8 @@ def main() -> int:
         "letting quantize() merge them into the nearest bucket. Adds up to --max-outliers extra palette entries "
         "on top of --colors -- see flatten_with_outliers() for why plain quantization can't fix this at any color count.",
     )
-    parser.add_argument("--outlier-threshold", type=int, default=100, help="Min color distance (sum of |dR|+|dG|+|dB|) to count as an outlier; tested: 220 missed a real 130-distance eye highlight, 100 catches it")
-    parser.add_argument("--max-outliers", type=int, default=6, help="Max number of extra outlier colors to preserve")
+    parser.add_argument("--outlier-threshold", type=int, default=60, help="Min color distance (sum of |dR|+|dG|+|dB|) to count as an outlier; tested on Kat: eye highlight sat at 130, shorts trim (warm off-white, not pure white) at only 69-93 -- 100 missed the trim, 60 catches both")
+    parser.add_argument("--max-outliers", type=int, default=12, help="Max number of extra outlier colors to preserve (6 was enough for just the eye/hair highlight, not enough once the shorts trim needed its own slots too)")
     args = parser.parse_args()
 
     src = Image.open(args.input)
