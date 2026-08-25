@@ -23,14 +23,32 @@ from pixel_clean import box_downscale, unique_color_count
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def flatten(img: Image.Image, downscale: int, colors: int) -> Image.Image:
+def flatten(img: Image.Image, downscale: int, colors: int, alpha_threshold: int = 128) -> Image.Image:
     img = img.convert("RGBA")
     small = box_downscale(img, downscale)
+
+    # Binarize alpha first: a real pixel-art sprite has no semi-transparent
+    # fringe (docs/gemini-pixel-prompts.md's "no anti-aliasing" rule applies
+    # to the silhouette edge too, not just shading). Left soft, every edge
+    # pixel gets its own near-duplicate RGBA entry -- see sprite_formula.py,
+    # which turned a "32 color" sprite into a 1155-entry palette until this
+    # was fixed.
+    alpha = small.split()[3].point(lambda a: 255 if a >= alpha_threshold else 0)
 
     rgb = small.convert("RGB")
     quantized = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
     quantized = quantized.convert("RGBA")
-    quantized.putalpha(small.split()[3])
+    quantized.putalpha(alpha)
+
+    # Collapse every fully-transparent pixel's RGB to one value, so "invisible"
+    # doesn't silently multiply the palette with near-black edge-blend variants.
+    px = quantized.load()
+    w, h = quantized.size
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] == 0:
+                px[x, y] = (0, 0, 0, 0)
+
     return quantized
 
 
