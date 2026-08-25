@@ -67,27 +67,27 @@ MagicPixel сам это накладывает по этим полям (в о�
 6. Для «надеть предмет на персонажа» (объединить донора и цель) —
    `apply_with_ai`.
 
-## 3. Скачивание PNG в репозиторий — известное ограничение
+## 3. Скачивание PNG в репозиторий
 
-`generate_pixel_art` / `get_asset` отдают картинку через сам MCP-вызов
-(её видно в диалоге), но **не файлом на диске**. Файл лежит в приватном
-хранилище MagicPixel (`https://sddsilidjhvtvejzvolx.supabase.co/storage/...`,
-подписанная ссылка с TTL ~1 час).
+**Решено 2026-08-25** (было известным ограничением, см. историю ниже):
+`generate_pixel_art`/`get_asset` отдают картинку через сам MCP-вызов, но
+файл лежит в приватном хранилище MagicPixel
+(`https://sddsilidjhvtvejzvolx.supabase.co/storage/...`, подписанная
+ссылка с TTL ~1 час, текст ответа содержит `Preview: <url>`). Раньше
+прямой `curl`/`WebFetch` на этот хост из облачной сессии (`agent proxy`,
+см. `/root/.ccr/README.md`) блокировался политикой egress (403 на
+CONNECT). Пользователь обновил egress-настройки окружения (Environment →
+Network access → allowlist) — теперь домен доступен, скачивание одной
+командой:
 
-В этой облачной среде (`agent proxy`, см. `/root/.ccr/README.md`) прямой
-`curl`/`WebFetch` на этот хост **блокируется политикой egress сессии**
-(403 на CONNECT) — это организационное ограничение, не баг конвейера.
+```bash
+curl -sS -o characters/<id>/reference/<name>.png "<preview-url-из-ответа-generate_pixel_art>"
+```
 
-Варианты закрыть это:
-
-- **Разрешить домен** `sddsilidjhvtvejzvolx.supabase.co` (или домен из
-  актуальной подписанной ссылки) в настройках egress облачного окружения —
-  та же настройка, что уже описана в [`magic-pixel-api.md`](magic-pixel-api.md)
-  для REST-варианта («Network / egress → разрешите домен API»).
-- **Скачать вручную** из библиотеки MagicPixel (веб-приложение) и закоммитить
-  PNG в `characters/<id>/reference/` — как раньше делалось с экспортами Gemini.
-- Прогнать шаг скачивания в среде без этого ограничения (локально, обычный
-  Cursor-агент и т.д.).
+Проверено вживую: `egress-download-test` (32×32 item) — `HTTP 200`,
+скачанный PNG открылся корректно. Если в другом окружении/сессии снова
+увидите `403`/`CONNECT tunnel failed` — значит там egress не настроен,
+чиним так же (домен `sddsilidjhvtvejzvolx.supabase.co` в allowlist).
 
 После скачивания: положить файл в `characters/<id>/reference/`, обновить
 `spec.json.generated.downloaded = true`, при необходимости разложить по
