@@ -2,15 +2,13 @@
   "schema": "game-live-v3/face-assemble/1",
   "character_id": "kat",
   "output": "output/kat/face.png",
-  "canvas": { "width": 1024, "height": 1024 },
-  "anchor_neck": { "x": 512, "y": 942 },
+  "canvas": { "width": 220, "height": 235 },
+  "anchor_neck": { "x": 110, "y": 232 },
   "layers": [
-    { "id": "head", "file": "templates/face/head/archetype.png", "x": 0, "y": 0, "scale": 1, "key_white": true },
-    { "id": "eyes", "file": "templates/face/eyes/neutral.png", "x": 0, "y": 0, "scale": 1, "key_white": true },
-    { "id": "brows", "file": "templates/face/brows/neutral.png", "x": 0, "y": 0, "scale": 1, "key_white": true },
-    { "id": "nose", "file": "templates/face/nose/default_3q.png", "x": 0, "y": 0, "scale": 1, "key_white": true },
-    { "id": "lips", "file": "templates/face/lips/neutral.png", "x": 0, "y": 0, "scale": 1, "key_white": true },
-    { "id": "cosmetics", "file": "templates/face/cosmetics/none.png", "x": 0, "y": 0, "scale": 1, "key_white": true, "opacity": 0.85 },
-    { "id": "hair", "file": "templates/face/hair/default.png", "x": 0, "y": 0, "scale": 1, "key_white": true }
+    { "id": "head", "file": "templates/face/head/archetype.png", "x": 0, "y": 0, "scale": 1, "key_white": false },
+    { "id": "brows", "file": "templates/face/brows/neutral.png", "x": 20, "y": 65, "scale": 1, "key_white": false },
+    { "id": "eyes", "file": "templates/face/eyes/neutral.png", "x": 30, "y": 75, "scale": 1, "key_white": false },
+    { "id": "nose", "file": "templates/face/nose/default_3q.png", "x": 52, "y": 153, "scale": 1, "key_white": false },
+    { "id": "lips", "file": "templates/face/lips/neutral.png", "x": 56, "y": 179, "scale": 1, "key_white": false }
   ]
 }
