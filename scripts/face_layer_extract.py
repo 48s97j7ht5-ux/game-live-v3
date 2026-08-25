@@ -22,6 +22,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from pixel_clean import box_downscale, unique_color_count
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -86,9 +88,22 @@ def main() -> int:
     parser.add_argument("--rows", type=int, default=4)
     parser.add_argument("--cell", type=int, default=0, help="Which cell (0-indexed, row-major) to extract layers from")
     parser.add_argument("--out-dir", default=str(ROOT / "output" / "face_layers"))
+    parser.add_argument(
+        "--downscale",
+        type=int,
+        default=1,
+        help="Box-filter downscale factor to run BEFORE slicing/extraction, to recover a true "
+        "low-res pixel grid from a noisy JPEG / soft-antialiased source (see pixel_clean.py). "
+        "Try 8 if the source is a ~1024px 'pixel art styled' export.",
+    )
     args = parser.parse_args()
 
     grid = Image.open(args.input).convert("RGB")
+    if args.downscale > 1:
+        before = unique_color_count(grid)
+        grid = box_downscale(grid, args.downscale)
+        after = unique_color_count(grid)
+        print(f"Downscaled /{args.downscale}: {grid.size}, unique colors {before} -> {after}")
     gw, gh = grid.size
     cw, ch = gw // args.cols, gh // args.rows
     bg = grid.getpixel((2, 2))
