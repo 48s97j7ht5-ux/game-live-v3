@@ -7,7 +7,7 @@
   "layers": [
     { "id": "head", "file": "templates/face/head/archetype.png", "x": 0, "y": 0, "scale": 1, "key_white": false },
     { "id": "brows", "file": "templates/face/brows/neutral.png", "x": 20, "y": 65, "scale": 1, "key_white": false },
-    { "id": "eyes", "file": "templates/face/eyes/neutral.png", "x": 30, "y": 101, "scale": 1, "key_white": false },
+    { "id": "eyes", "file": "templates/face/eyes/neutral.png", "x": 18, "y": 101, "scale": 1, "key_white": false },
     { "id": "nose", "file": "templates/face/nose/default_3q.png", "x": 52, "y": 153, "scale": 1, "key_white": false },
     { "id": "lips", "file": "templates/face/lips/neutral.png", "x": 56, "y": 179, "scale": 1, "key_white": false }
   ]
