@@ -132,52 +132,41 @@ Same head position as reference. No face features drawn.
 
 ---
 
-## Блок «Kat DNA — только тело» (без одежды и аксессуаров)
+## Refine: попиксельно улучшить размытый арт (прозрачный фон)
+
+**Задача:** прикрепить **ваш размытый PNG** → получить **ту же картинку** (та же одежда, поза, персонаж), но **чёткий pixel art на прозрачном фоне**.  
+**Не пишите** в промпте про снятие одежды / nude / mannequin — иначе цензура. **Не пишите** enhance/upscale blur — лучше **redraw as pixel sprite**.
 
 ```
-Same young woman character: tan skin, athletic-slim proportions, emo/goth body type.
-Use attached reference ONLY for pose, body shape, and identity — redraw from scratch as crisp pixels.
+Recreate the attached image as strict retro pixel art for a 2D game.
+Keep the EXACT same character design, outfit, accessories, pose, camera angle, and body proportions as the reference.
+Do not add or remove clothing or items. Do not change the concept — only improve pixel clarity.
+
+512x512 pixels. Fully transparent background (alpha channel), NO white backdrop, NO gray, NO checkerboard pattern baked in.
+Character about 300 pixels tall, centered with padding, three-quarter view unless reference differs.
+
+Integer pixel grid, hard edges, NO anti-aliasing, NO blur, NO soft shading, NO gradients, NO semi-transparent fringe pixels on the silhouette.
+Maximum 32 colors in the entire sprite. Each area uses up to 4 flat cel-shading colors (outline, shadow, base, highlight).
+1-pixel dark outer outline. SNES / Stardew Valley quality — sharp staircase edges when zoomed in.
+
+Redraw from scratch as crisp pixels. Do NOT apply a soft filter or smooth upscale on top of the reference.
+The result must look SHARPER and MORE PIXELATED than the attachment.
+
+Avoid: watermark, star icon, text, logo, photorealistic rendering, 4k illustration look, fuzzy edges, color bleeding outside the silhouette.
 ```
+
+**Куда класть:** `characters/kat/reference/kat-refined-512.png`  
+**Compositors:** если фон реально прозрачный — можно **выключить key white** для этого слоя.
+
+**Если Gemini отдаёт белый фон вместо alpha:** добавьте в конец: `Export PNG with transparent background only; every pixel outside the character must be 100% transparent.`
+
+**Если всё ещё мягко:** пост-обработка 512→192→512 **Nearest** (вне Gemini).
 
 ---
 
-## Тест: только фигура + ваш размытый референс
+## ~~Тест: только фигура~~ (убрано — цензура / не нужно)
 
-**Задача:** прикрепить **размытый PNG из чата/галереи** → Gemini **перерисовывает** ту же позу/пропорции, но **жёсткий pixel**, без одежды и без «украшений».
-
-**Не просите:** edit, enhance, upscale — только **redraw / recreate as strict pixel sprite**.
-
-```
-Strict retro pixel art character BASE for a 2D life-simulation game.
-512x512 pixels, solid white background #FFFFFF only.
-
-Redraw the attached reference image as a NEW crisp pixel sprite.
-Copy ONLY: pose, camera angle, body proportions, character identity, pregnancy state if visible in reference.
-Do NOT copy: blur, soft edges, anti-aliasing, color count, or resolution of the reference.
-
-One nude human figure (anatomical mannequin for game modding), exactly 300 pixels tall feet to top of head, centered with equal padding.
-Three-quarter view, facing slightly to the right. Standing pose matching the reference.
-Bald head, NO facial features (no eyes, no eyebrows, no nose, no mouth). Plain smooth face volume only.
-
-NO clothing, NO swimsuit, NO underwear, NO shoes, NO socks, NO jewelry, NO choker, NO wristbands, NO tattoos, NO hair (bald).
-Skin only, single continuous body. Hands and feet simplified pixel shapes.
-
-Integer pixel grid, hard edges, NO anti-aliasing, NO blur, NO gradients, NO soft shading, NO semi-transparent pixels.
-Maximum 32 colors in the entire image. Skin uses exactly 4 flat colors: outline, shadow, base, highlight.
-1-pixel dark outer silhouette. SNES / Stardew Valley sprite, not illustration.
-
-Avoid: clothes, accessories, hair, makeup, fuzzy edges, painterly shading, photorealistic, 3k, 4k, watermark, star icon, gray background, checkerboard, extra fingers.
-
-Output must look SHARPER and MORE PIXELATED than the attachment, not a soft filter of it.
-```
-
-**Куда класть:** `characters/kat/reference/kat-figure-base-512.png`
-
-**Если референс — беременность:** ничего не меняйте в промпте; строка про pregnancy в reference уже учитывает живот.
-
-**Если референс — с одеждой на картинке:** модель всё равно должна выдать **голую базу** той же позы — не копировать купальник с фото.
-
----
+Используйте блок **Refine** выше.
 
 ### 7–8. Full body / pregnant с одеждой
 
