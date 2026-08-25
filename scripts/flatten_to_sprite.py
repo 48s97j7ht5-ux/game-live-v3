@@ -34,18 +34,28 @@ def flatten_with_outliers(
     alpha_threshold: int = 128,
     outlier_threshold: int = 100,
     max_outlier_colors: int = 6,
+    cluster_bucket: int = 20,
 ) -> Image.Image:
     """Like flatten(), but pixels whose color is far from every quantized
     palette entry (e.g. a 3-pixel pure-white catchlight surrounded by tens
-    of thousands of brown/tan pixels) keep their exact original color
-    instead of being merged into the nearest bucket. A normal quantizer
-    optimizes total error across ALL pixels, so a handful of outlier
-    pixels never "win" a slot on their own -- see the sprite_formula.py /
-    palette_classify.py discussion: even --colors 255 didn't save 3 white
-    pixels out of 174592. This bypasses that by treating "how far is this
-    from anything already kept" as its own criterion, applied after the
-    normal quantize pass, on top of its budget (so total colors can go a
-    little over `colors` -- that's the deliberate trade-off).
+    of thousands of brown/tan pixels) keep their (clustered) original color
+    instead of being merged into the nearest quantize() bucket. A normal
+    quantizer optimizes total error across ALL pixels, so a handful of
+    outlier pixels never "win" a slot on their own -- see the
+    sprite_formula.py / palette_classify.py discussion: even --colors 255
+    didn't save a 3-pixel white cluster out of 174592.
+
+    First attempt grouped outlier candidates by EXACT source RGB before
+    ranking by frequency -- and missed the real eye highlight anyway: box
+    downscaling doesn't produce one repeated color, it produces a dozen
+    near-white shades a few units apart (248,248,247 / 247,246,245 / ...),
+    each individually too rare to make the top-N cut even though the
+    *cluster* is significant. Fixed by bucketing colors to the nearest
+    `cluster_bucket` per channel before counting/ranking, then outputting
+    each kept pixel at its cluster's average color (not its single-pixel
+    exact value, which would silently reinflate the palette back toward
+    "thousands of near-duplicate colors" -- the original problem this
+    whole module exists to fix).
     """
     img = img.convert("RGBA")
     small = box_downscale(img, downscale)
@@ -53,16 +63,18 @@ def flatten_with_outliers(
 
     rgb = small.convert("RGB")
     quantized = rgb.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-    base_palette = quantized.getpalette()[: colors * 3]
-    base_colors = [tuple(base_palette[i : i + 3]) for i in range(0, len(base_palette), 3)]
     quantized_rgb = quantized.convert("RGB")
 
     w, h = small.size
     src_px, q_px, a_px = rgb.load(), quantized_rgb.load(), alpha.load()
 
+    def bucket_of(c: tuple[int, int, int]) -> tuple[int, int, int]:
+        return tuple((v // cluster_bucket) * cluster_bucket for v in c)
+
     out = Image.new("RGBA", (w, h))
     out_px = out.load()
-    outlier_colors: dict[tuple[int, int, int], int] = {}
+    # bucket -> [pixel_count, r_sum, g_sum, b_sum]
+    clusters: dict[tuple[int, int, int], list[int]] = {}
 
     for y in range(h):
         for x in range(w):
@@ -72,23 +84,30 @@ def flatten_with_outliers(
             src_c = src_px[x, y]
             q_c = q_px[x, y]
             if color_dist(src_c, q_c) > outlier_threshold:
-                outlier_colors.setdefault(src_c, 0)
-                outlier_colors[src_c] += 1
+                b = bucket_of(src_c)
+                acc = clusters.setdefault(b, [0, 0, 0, 0])
+                acc[0] += 1
+                acc[1] += src_c[0]
+                acc[2] += src_c[1]
+                acc[3] += src_c[2]
             out_px[x, y] = (*q_c, 255)
 
-    kept_outliers = sorted(outlier_colors.items(), key=lambda kv: -kv[1])[:max_outlier_colors]
-    kept_set = {c for c, _ in kept_outliers}
+    kept_buckets = sorted(clusters.items(), key=lambda kv: -kv[1][0])[:max_outlier_colors]
+    representative = {bucket: (round(n[1] / n[0]), round(n[2] / n[0]), round(n[3] / n[0])) for bucket, n in kept_buckets}
 
     for y in range(h):
         for x in range(w):
             if a_px[x, y] == 0:
                 continue
             src_c = src_px[x, y]
-            if src_c in kept_set:
-                out_px[x, y] = (*src_c, 255)
+            q_c = q_px[x, y]
+            if color_dist(src_c, q_c) > outlier_threshold:
+                b = bucket_of(src_c)
+                if b in representative:
+                    out_px[x, y] = (*representative[b], 255)
 
-    if kept_outliers:
-        print(f"Preserved {len(kept_outliers)} outlier colors instead of quantizing them: {[c for c, n in kept_outliers]}")
+    if representative:
+        print(f"Preserved {len(representative)} outlier color clusters instead of quantizing them: {list(representative.values())}")
 
     return out
 
