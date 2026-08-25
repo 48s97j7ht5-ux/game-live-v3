@@ -1,0 +1,15 @@
+{
+  "schema": "game-live-v3/face-assemble/1",
+  "character_id": "kat",
+  "output": "output/kat/full.png",
+  "canvas": { "width": 1024, "height": 1536 },
+  "anchor_neck": { "x": 480, "y": 330 },
+  "layers": [
+    { "id": "body", "file": "characters/kat/reference/kat-sporty-outfit-bald-src.png", "x": 0, "y": 0, "scale": 1, "key_white": false },
+    { "id": "hair", "file": "templates/face/hair/default.png", "x": 0, "y": 0, "scale": 1, "key_white": false },
+    { "id": "brows", "file": "templates/face/brows/neutral.png", "x": 390, "y": 150, "scale": 1, "key_white": false },
+    { "id": "eyes", "file": "templates/face/eyes/neutral.png", "x": 388, "y": 186, "scale": 1, "key_white": false },
+    { "id": "nose", "file": "templates/face/nose/default_3q.png", "x": 422, "y": 238, "scale": 1, "key_white": false },
+    { "id": "lips", "file": "templates/face/lips/neutral.png", "x": 426, "y": 264, "scale": 1, "key_white": false }
+  ]
+}
