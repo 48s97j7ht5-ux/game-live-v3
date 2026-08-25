@@ -132,73 +132,66 @@ Same head position as reference. No face features drawn.
 
 ---
 
-## Тест: тело целиком (скопировать в Gemini)
-
-Проверка **резкости и пропорций** перед нарезкой на слои. Прикрепите **лучший прошлый кадр Kat** как reference.
+## Блок «Kat DNA — только тело» (без одежды и аксессуаров)
 
 ```
-Strict retro pixel art sprite for a 2D life-simulation game.
+Same young woman character: tan skin, athletic-slim proportions, emo/goth body type.
+Use attached reference ONLY for pose, body shape, and identity — redraw from scratch as crisp pixels.
+```
+
+---
+
+## Тест: только фигура + ваш размытый референс
+
+**Задача:** прикрепить **размытый PNG из чата/галереи** → Gemini **перерисовывает** ту же позу/пропорции, но **жёсткий pixel**, без одежды и без «украшений».
+
+**Не просите:** edit, enhance, upscale — только **redraw / recreate as strict pixel sprite**.
+
+```
+Strict retro pixel art character BASE for a 2D life-simulation game.
 512x512 pixels, solid white background #FFFFFF only.
-One full-body character, exactly 300 pixels tall from feet to top of hair, centered in the frame with equal padding on all sides.
-Three-quarter view, body facing slightly to the right, head turned same direction.
-Integer pixel grid, crisp hard edges, NO anti-aliasing, NO blur, NO gradients, NO soft shading, NO semi-transparent edge pixels.
-Maximum 32 colors in the entire image total.
-Each area uses exactly 4 flat colors only: dark outline, shadow, mid base, highlight (skin, hair, swimsuit, shoes separately).
-1-pixel black or dark brown outer silhouette outline. SNES / Stardew Valley sprite quality, not illustration.
 
-Character: young woman, emo goth-lite style, tan skin, messy black shoulder-length hair with jagged bangs.
-Neutral calm face, simple pixel eyes and mouth, not anime huge eyes.
-Standing pose, hands on hips, elbows out.
-Outfit: plain dark navy bikini. Black spiked choker, black spiked wristbands on both wrists.
-Feet: simple black low-top sneakers with white soles and white laces (Vans-style), not barefoot.
+Redraw the attached reference image as a NEW crisp pixel sprite.
+Copy ONLY: pose, camera angle, body proportions, character identity, pregnancy state if visible in reference.
+Do NOT copy: blur, soft edges, anti-aliasing, color count, or resolution of the reference.
 
-Avoid: anti-aliasing, fuzzy edges, painterly shading, color bleeding, smooth gradients, photorealistic, 3D, 4k, 8k, cinematic lighting, watermark, star icon, text, gray background, checkerboard, extra limbs, deformed hands.
+One nude human figure (anatomical mannequin for game modding), exactly 300 pixels tall feet to top of head, centered with equal padding.
+Three-quarter view, facing slightly to the right. Standing pose matching the reference.
+Bald head, NO facial features (no eyes, no eyebrows, no nose, no mouth). Plain smooth face volume only.
 
-Same character as the attached reference image if provided. Match pixel crispness of reference; do not make image softer or higher resolution.
+NO clothing, NO swimsuit, NO underwear, NO shoes, NO socks, NO jewelry, NO choker, NO wristbands, NO tattoos, NO hair (bald).
+Skin only, single continuous body. Hands and feet simplified pixel shapes.
+
+Integer pixel grid, hard edges, NO anti-aliasing, NO blur, NO gradients, NO soft shading, NO semi-transparent pixels.
+Maximum 32 colors in the entire image. Skin uses exactly 4 flat colors: outline, shadow, base, highlight.
+1-pixel dark outer silhouette. SNES / Stardew Valley sprite, not illustration.
+
+Avoid: clothes, accessories, hair, makeup, fuzzy edges, painterly shading, photorealistic, 3k, 4k, watermark, star icon, gray background, checkerboard, extra fingers.
+
+Output must look SHARPER and MORE PIXELATED than the attachment, not a soft filter of it.
 ```
 
-**Куда класть:** `characters/kat/reference/kat-fullbody-test-512.png`  
-**Проверка:** zoom 400% — контур должен быть **лесенкой**; персонаж **~300 px** высотой, не точка и не на весь 512 без полей.
+**Куда класть:** `characters/kat/reference/kat-figure-base-512.png`
+
+**Если референс — беременность:** ничего не меняйте в промпте; строка про pregnancy в reference уже учитывает живот.
+
+**Если референс — с одеждой на картинке:** модель всё равно должна выдать **голую базу** той же позы — не копировать купальник с фото.
 
 ---
 
-### 7. Full body — neutral (референс, не слой лица)
+### 7–8. Full body / pregnant с одеждой
 
-См. блок **«Тест: тело целиком»** выше для полного текста. Краткая версия:
-
-```
-[STYLE ANCHOR]
-[KAT DNA]
-Full body standing, hands on hips, black sneakers white soles, dark bikini, spiked choker and wristbands.
-Full character exactly 300px tall in 512x512 canvas, centered.
-```
-
-
-Файл: `characters/kat/reference/kat-fullbody-neutral-512.png`
-
----
-
-### 8. Body variant — pregnant (отдельный body, не face-compositor)
-
-```
-[STYLE ANCHOR]
-[KAT DNA]
-Same character, same pose and canvas, visibly pregnant belly, otherwise identical proportions.
-Faceless OR neutral face — prefer faceless for modular pipeline.
-No extra clothing beyond simple dark bikini bottom. 300px character height, 32 colors max.
-```
-
-Файл: `characters/kat/reference/kat-body-pregnant-512.png`
+Не используем в промптах. База — только **«Тест: только фигура»** + размытый референс.
 
 ---
 
 ## Как работать в Gemini (телефон)
 
-1. **Первый удачный кадр** → сохранить как **master reference**, всегда **прикреплять** к следующим запросам.
-2. Текст промпта: **STYLE ANCHOR + NEGATIVE + конкретный слой**; в конце: `Match pixel crispness and exact canvas layout of the attached reference. Do not increase softness.`
-3. Просить **один слой за раз**; не «full character with everything» для modular.
+1. **Refine-тест:** прикрепить **размытый** старый PNG → промпт **«только фигура»** → `Redraw`, не `enhance`.
+2. Первый **чёткий** результат → новый master reference для слоёв лица.
+3. Текст: без одежды/волос/украшений в промпте; внешность только через reference + «same character identity».
 4. Если модель упрямится в 1024 — явно: `Output aspect ratio 1:1, smallest native resolution, sprite not poster`.
-5. Проверка: zoom 400% — края должны быть **ступеньки**, не полупрозрачные пиксели.
+5. Проверка: zoom 400% — края **ступеньки**, не полупрозрачные пиксели.
 
 ---
 
