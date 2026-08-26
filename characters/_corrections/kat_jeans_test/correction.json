@@ -1,0 +1,12 @@
+{
+  "schema": "game-live-v3/correction/1",
+  "name": "kat_jeans_test",
+  "source_base": "characters/kat/dataset/kat_06_underwear.png",
+  "source_clothed": "characters/kat/dataset/kat_04_tank_jeans.png",
+  "stats": {
+    "removed_by_human": 23528,
+    "restored_by_human": 0,
+    "agreed": 221103
+  },
+  "agreement_iou": 0.9038
+}

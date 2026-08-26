@@ -1,0 +1,6 @@
+{
+  "iou": 1.0,
+  "threshold": 40,
+  "min_blob": 2000,
+  "thin_radius": 7
+}
