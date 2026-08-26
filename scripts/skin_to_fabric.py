@@ -26,6 +26,22 @@ Needed the same percentile fix as recolor_garment.py, more severely: skin
 value distributions are far narrower than typical fabric (median v=0.97,
 p1-p99 spanning roughly 0.13-0.99 on one leg), so true min/max compressed all
 of it into an invisible sliver near v_hi.
+
+The stencil shape still comes from one reference body -- if the destination
+body's proportions differ even slightly, the mask's own waist edge can sit
+inside the true hip line, leaving a notch of bare skin at each hip corner
+(the crop is narrower than the body under it). --snap-waist fixes the two
+corners specifically, following a plan worked out with the user and a second
+model (ChatGPT) rather than a blind global stretch: treat the left and right
+waist panels independently (the pose is rarely symmetric -- mirroring one
+side onto the other is wrong), anchor each side at the first row (top-down)
+where that panel is already wide enough to be a reliable edge (the raw
+topmost pixels of a diff-extracted mask are often a thin noise spike, not
+real fabric -- confirmed on kat_16's shorts, where a spike survived up to 22
+rows above both reliable anchors and had to be clipped, not extended), then
+walk outward from the mask's edge to the body's own silhouette at each row,
+blending the reach out to zero over --snap-zone px so it feathers into the
+untouched lower two-thirds of the garment instead of stopping abruptly.
 """
 
 from __future__ import annotations
@@ -42,7 +58,81 @@ import fit_garment as fg  # noqa: E402
 import recolor_garment as rc  # noqa: E402
 
 
-def skin_to_fabric(body: Image.Image, mask: Image.Image, source_body: Image.Image | None, target_hsv, v_lo: float, v_hi: float, keep_sat: float, margin: int) -> Image.Image:
+def _mask_row_span(mp, y: int, x0: int, x1: int) -> tuple[int, int] | None:
+    cols = [x for x in range(x0, x1) if mp[x, y][3] > 0]
+    return (min(cols), max(cols)) if cols else None
+
+
+def _find_reliable_anchor(mp, x0: int, x1: int, y0: int, y1: int, min_width: int) -> int:
+    """First row (top-down) whose panel is already wider than min_width.
+
+    A diff-extracted mask's very top pixels are frequently a thin noise
+    spike rather than real fabric -- anchoring on the literal top of the
+    bounding box picks up that noise instead of a trustworthy edge.
+    """
+    for y in range(y0, y1):
+        span = _mask_row_span(mp, y, x0, x1)
+        if span and (span[1] - span[0]) >= min_width:
+            return y
+    return y0
+
+
+def snap_waist_to_body(mask: Image.Image, body_sil: Image.Image, zone: int, max_reach: int, min_width: int = 12) -> Image.Image:
+    """Extend the mask's top-left and top-right panels out to the body's own
+    silhouette, independently per side, fading the effect out over `zone` px.
+
+    Clips whatever sits above both anchors first (see min_width docstring
+    above) -- that noise would otherwise survive untouched since it's above
+    where the extension logic starts looking.
+    """
+    w, h = mask.size
+    mp = mask.load()
+    sp = body_sil.load()
+
+    bbox = mask.getbbox()
+    if bbox is None:
+        return mask
+    x_lo, y_lo, x_hi, y_hi = bbox
+    cx_mid = (x_lo + x_hi) // 2
+    scan_bottom = min(h, y_lo + zone + 40)
+
+    anchor_left = _find_reliable_anchor(mp, x_lo, cx_mid, y_lo, scan_bottom, min_width)
+    anchor_right = _find_reliable_anchor(mp, cx_mid, x_hi, y_lo, scan_bottom, min_width)
+
+    out = mask.copy()
+    op = out.load()
+
+    for y in range(y_lo, min(anchor_left, anchor_right)):
+        for x in range(x_lo, x_hi):
+            if op[x, y][3]:
+                op[x, y] = (0, 0, 0, 0)
+
+    def extend_side(anchor_y: int, x0: int, x1: int, outward: int) -> None:
+        for y in range(anchor_y, min(h, anchor_y + zone)):
+            span = _mask_row_span(mp, y, x0, x1)
+            if not span:
+                continue
+            m_edge = span[0] if outward < 0 else span[1]
+            b_edge = m_edge
+            for step in range(1, max_reach + 1):
+                xx = m_edge + outward * step
+                if 0 <= xx < w and sp[xx, y] > 127:
+                    b_edge = xx
+                else:
+                    break
+            t = 1.0 - (y - anchor_y) / zone
+            new_edge = int(round(m_edge + (b_edge - m_edge) * t))
+            fill = mp[m_edge, y]
+            lo, hi = (new_edge, m_edge) if outward < 0 else (m_edge + 1, new_edge + 1)
+            for x in range(lo, hi):
+                op[x, y] = fill
+
+    extend_side(anchor_left, x_lo, cx_mid, -1)
+    extend_side(anchor_right, cx_mid, x_hi, +1)
+    return out
+
+
+def skin_to_fabric(body: Image.Image, mask: Image.Image, source_body: Image.Image | None, target_hsv, v_lo: float, v_hi: float, keep_sat: float, margin: int, snap_waist: bool = False, snap_zone: int = 55, snap_reach: int = 30) -> Image.Image:
     body = body.convert("RGBA")
     mask = mask.convert("RGBA")
     w, h = body.size
@@ -56,8 +146,13 @@ def skin_to_fabric(body: Image.Image, mask: Image.Image, source_body: Image.Imag
     shifted_mask = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     shifted_mask.paste(mask, (dx, dy))
 
+    body_sil = fg.silhouette(body)
+
+    if snap_waist:
+        shifted_mask = snap_waist_to_body(shifted_mask, body_sil, snap_zone, snap_reach)
+
     # clothing can't exist where there's no body -- same rule fit_garment uses
-    grown = fg.silhouette(body).filter(ImageFilter.MaxFilter(margin))
+    grown = body_sil.filter(ImageFilter.MaxFilter(margin))
     gp = grown.load()
     smp = shifted_mask.load()
     for y in range(h):
@@ -87,6 +182,9 @@ def main() -> int:
     parser.add_argument("--v-hi", type=float, default=0.55, help="Skin's real shading range is narrow, so this usually wants to be wider than recolor_garment's fabric default")
     parser.add_argument("--keep-sat", type=float, default=0.05)
     parser.add_argument("--margin", type=int, default=9)
+    parser.add_argument("--snap-waist", action="store_true", help="Extend the mask's left/right waist panels out to the body's own silhouette, independently per side -- closes hip-corner notches from a mask cut on a different body")
+    parser.add_argument("--snap-zone", type=int, default=55, help="How far down from the waist the snap effect fades out, px")
+    parser.add_argument("--snap-reach", type=int, default=30, help="Max px the snap will extend the mask edge outward to find the body's silhouette")
     parser.add_argument("--preview-scale", type=float, default=0.5)
     args = parser.parse_args()
 
@@ -94,7 +192,7 @@ def main() -> int:
     mask = Image.open(args.mask)
     source = Image.open(args.source_body) if args.source_body else None
 
-    fabric = skin_to_fabric(body, mask, source, rc.parse_hex(args.color), args.v_lo, args.v_hi, args.keep_sat, args.margin)
+    fabric = skin_to_fabric(body, mask, source, rc.parse_hex(args.color), args.v_lo, args.v_hi, args.keep_sat, args.margin, args.snap_waist, args.snap_zone, args.snap_reach)
 
     out = body.convert("RGBA").copy()
     out.alpha_composite(fabric)
