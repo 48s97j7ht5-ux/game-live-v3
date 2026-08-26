@@ -1,8 +1,32 @@
 # game-live-v3
 
-2D персонажи ¾: части из **Gemini** / Leonardo → сборка в браузере или скриптом.
+2D персонажи ¾: части из **Gemini** / Leonardo → нормализация в реальный low-res pixel sprite → сборка в браузере или скриптом.
 
 **Промпты Gemini (300 px рост, 512 canvas, 32 цвета):** [`docs/gemini-pixel-prompts.md`](docs/gemini-pixel-prompts.md)
+
+## True pixel normalize (192 px)
+
+AI-рендер не считаем готовым pixel art. Перед добавлением в шаблоны его можно прогнать через [`scripts/pixel_normalize.py`](scripts/pixel_normalize.py).
+
+```bash
+pip install -r requirements.txt
+python3 scripts/pixel_normalize.py input.png output.png \
+  --height 192 \
+  --colours 48 \
+  --key black
+```
+
+Что гарантирует нормализатор:
+
+- видимая фигура в итоговом PNG имеет **ровно 192 реальных пикселя по высоте**;
+- ресемплинг только **Nearest Neighbor**;
+- максимум **48 видимых RGB-цветов**;
+- **без dithering**;
+- alpha только `0` или `255`, без полупрозрачной бахромы;
+- фон вырезается по black / white / custom key;
+- выходной файл — настоящий низкоразрешённый PNG, а не HD-рендер с наложенной «пиксельной сеткой».
+
+Для прозрачного исходника используйте `--key none`. Для белого фона — `--key white`. Для другого цвета — `--key custom --key-rgb RRGGBB`.
 
 ## Compose (body + head + hair)
 
