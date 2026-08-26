@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Kat 192 Pixel Workbench</title>
+<style>
+:root{font-family:system-ui,sans-serif;color-scheme:dark}body{margin:0;background:#111;color:#eee}.bar{position:sticky;top:0;z-index:5;background:#1b1b1b;border-bottom:1px solid #333;padding:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.bar button,.bar label{background:#272727;color:#eee;border:1px solid #444;border-radius:7px;padding:7px 10px;font-size:14px}.bar input[type=file]{max-width:160px}.wrap{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:12px;padding:12px}.stage{overflow:auto;max-height:calc(100vh - 80px);background:#181818;border:1px solid #333;border-radius:10px;padding:12px}.board{position:relative;margin:auto;width:max-content;touch-action:none}.board canvas{position:absolute;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges}.board #grid{pointer-events:none}.board #ref{opacity:.45}.side{background:#181818;border:1px solid #333;border-radius:10px;padding:12px}.palette{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.sw{aspect-ratio:1;border:2px solid #555;border-radius:4px}.sw.active{outline:2px solid #fff}.small{font-size:12px;color:#aaa}.row{display:flex;gap:8px;align-items:center;margin:9px 0}.row input[type=range]{width:100%}.checker{background-image:linear-gradient(45deg,#222 25%,transparent 25%),linear-gradient(-45deg,#222 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#222 75%),linear-gradient(-45deg,transparent 75%,#222 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}.status{font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;color:#9fe}@media(max-width:780px){.wrap{grid-template-columns:1fr}.stage{max-height:none}.side{order:-1}}
+</style>
+</head>
+<body>
+<div class="bar">
+<label>Референс <input id="refFile" type="file" accept="image/*"></label>
+<button id="pencil">✏️ Карандаш</button><button id="eraser">⌫ Ластик</button><button id="clear">Очистить</button>
+<button id="undo">↶ Undo</button><button id="export">PNG 64×192</button>
+</div>
+<div class="wrap">
+<div class="stage checker"><div class="board" id="board"><canvas id="ref"></canvas><canvas id="paint"></canvas><canvas id="grid"></canvas></div></div>
+<aside class="side">
+<b>True Pixel Workbench</b>
+<div class="small">Финальный холст: 64×192. Каждый клик = один настоящий пиксель.</div>
+<div class="row"><span>Zoom</span><input id="zoom" type="range" min="3" max="10" value="5"><b id="zoomVal">5×</b></div>
+<div class="row"><span>Ref</span><input id="refOpacity" type="range" min="0" max="100" value="45"><b id="refOpacityVal">45%</b></div>
+<div class="row"><label><input id="showGrid" type="checkbox" checked> grid</label><label><input id="snapRef" type="checkbox" checked> nearest</label></div>
+<hr><b>Палитра эталона</b><div id="palette" class="palette"></div>
+<div class="row"><input id="customColor" type="color" value="#090404"><button id="useCustom">Взять</button></div>
+<hr><div class="status" id="status"></div>
+</aside>
+</div>
+<script>
+const W=64,H=192;
+const ref=document.getElementById('ref'),paint=document.getElementById('paint'),grid=document.getElementById('grid');
+const rc=ref.getContext('2d'),pc=paint.getContext('2d'),gc=grid.getContext('2d');
+[ref,paint,grid].forEach(c=>{c.width=W;c.height=H});pc.imageSmoothingEnabled=false;rc.imageSmoothingEnabled=false;
+const palette=['#F5A177','#4D302B','#090404','#FCBE95','#E68A66','#2B1E1F','#FCBD94','#FCBB91','#BD8268','#FCBB93','#FCBC94','#140F11','#865443','#F49D74','#EE9A72','#F5E2D5','#FCB78F','#F7AC83','#E7A783','#FDBD92','#FAC09B','#0D0000','#F9BD96','#B97B62'];
+let color=palette[2],tool='pencil',drawing=false,undo=[];
+const board=document.getElementById('board'),status=document.getElementById('status');
+function setZoom(z){board.style.width=(W*z)+'px';board.style.height=(H*z)+'px';[ref,paint,grid].forEach(c=>{c.style.width=(W*z)+'px';c.style.height=(H*z)+'px'});drawGrid(z);document.getElementById('zoomVal').textContent=z+'×'}
+function drawGrid(z){gc.clearRect(0,0,W,H);if(!document.getElementById('showGrid').checked)return;gc.strokeStyle='rgba(255,255,255,.17)';gc.lineWidth=1/z;for(let x=0;x<=W;x++){gc.beginPath();gc.moveTo(x,0);gc.lineTo(x,H);gc.stroke()}for(let y=0;y<=H;y++){gc.beginPath();gc.moveTo(0,y);gc.lineTo(W,y);gc.stroke()}}
+function saveUndo(){undo.push(pc.getImageData(0,0,W,H));if(undo.length>25)undo.shift()}
+function point(e){const r=paint.getBoundingClientRect();return{x:Math.max(0,Math.min(W-1,Math.floor((e.clientX-r.left)*W/r.width))),y:Math.max(0,Math.min(H-1,Math.floor((e.clientY-r.top)*H/r.height)))}}
+function dot(e){const{x,y}=point(e);if(tool==='eraser')pc.clearRect(x,y,1,1);else{pc.fillStyle=color;pc.fillRect(x,y,1,1)}status.textContent=`pixel ${x},${y}\ncolor ${color}`}
+paint.addEventListener('pointerdown',e=>{e.preventDefault();saveUndo();drawing=true;paint.setPointerCapture(e.pointerId);dot(e)});paint.addEventListener('pointermove',e=>{if(drawing)dot(e)});paint.addEventListener('pointerup',()=>drawing=false);paint.addEventListener('pointercancel',()=>drawing=false);
+document.getElementById('pencil').onclick=()=>tool='pencil';document.getElementById('eraser').onclick=()=>tool='eraser';document.getElementById('clear').onclick=()=>{saveUndo();pc.clearRect(0,0,W,H)};document.getElementById('undo').onclick=()=>{const x=undo.pop();if(x)pc.putImageData(x,0,0)};
+document.getElementById('export').onclick=()=>{const a=document.createElement('a');a.download='kat-192-sprite.png';a.href=paint.toDataURL('image/png');a.click()};
+document.getElementById('zoom').oninput=e=>setZoom(+e.target.value);document.getElementById('showGrid').onchange=()=>drawGrid(+document.getElementById('zoom').value);document.getElementById('refOpacity').oninput=e=>{ref.style.opacity=e.target.value/100;document.getElementById('refOpacityVal').textContent=e.target.value+'%'};
+document.getElementById('refFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{rc.clearRect(0,0,W,H);rc.imageSmoothingEnabled=!document.getElementById('snapRef').checked;const s=Math.min(W/im.width,H/im.height);const dw=Math.round(im.width*s),dh=Math.round(im.height*s);rc.drawImage(im,Math.round((W-dw)/2),Math.round((H-dh)/2),dw,dh);status.textContent=`reference ${im.width}×${im.height} → ${dw}×${dh}`};im.src=URL.createObjectURL(f)};
+const pal=document.getElementById('palette');palette.forEach((c,i)=>{const b=document.createElement('button');b.className='sw';b.style.background=c;b.title=c;b.onclick=()=>{document.querySelectorAll('.sw').forEach(x=>x.classList.remove('active'));b.classList.add('active');color=c;tool='pencil'};pal.appendChild(b);if(i===2)b.classList.add('active')});
+document.getElementById('useCustom').onclick=()=>{color=document.getElementById('customColor').value;tool='pencil'};
+setZoom(5);status.textContent='Загрузите эталон.\nРисование идёт строго по сетке 64×192.';
+</script>
+</body></html>
