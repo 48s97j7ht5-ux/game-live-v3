@@ -85,7 +85,13 @@ def main() -> int:
             note = f"dark ({dark:.0%} dark px) -- defringe skipped"
         else:
             garment, dropped = defringe.drop_thin_skin(garment, args.thin_radius, 8.0, 48.0)
-            note = f"{dark:.0%} dark px, defringe dropped {dropped}"
+            # defringe can fragment a blob that passed largest_blobs into
+            # orphan shards individually below the threshold -- re-run it.
+            before = sum(1 for q in garment.getdata() if q[3] > 0)
+            garment = extract_clothing.largest_blobs(garment, args.min_blob)
+            after = sum(1 for q in garment.getdata() if q[3] > 0)
+            orphaned = before - after
+            note = f"{dark:.0%} dark px, defringe dropped {dropped}" + (f", re-filter dropped {orphaned} orphans" if orphaned else "")
 
         kept = sum(1 for q in garment.getdata() if q[3] > 0)
         out_path = out_dir / f"{p.stem}.png"

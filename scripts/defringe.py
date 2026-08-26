@@ -21,15 +21,31 @@ extraction):
 What neither rule removes is the character's *dark* outline, since it is not
 skin-coloured. Extending the thin-structure test to dark pixels would also
 eat the garment's own outline, so that one is left for manual cleanup.
+
+Dropping pixels can also fragment what was one solid blob (already past
+extract_clothing's --min-blob filter) into several disconnected shards, each
+now individually below that size threshold -- orphans that the original
+filter pass never saw. Found on kat_16's shorts: a dark leg-contour leak from
+knee to toe survived extraction as part of one >2000px blob, then the
+thin-structure rule ate the middle of it and left ~15 disconnected fragments
+(89-265px each) scattered down the leg, invisible in the pixel-count total
+but visible as noise once the garment moved to a body with a different leg
+line. A second largest_blobs pass after defringe -- not before -- catches
+these; run automatically here unless --no-refilter is given.
 """
 
 from __future__ import annotations
 
 import argparse
 import colorsys
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageFilter
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import extract_clothing  # noqa: E402
 
 
 def is_skinlike(r: int, g: int, b: int, hue_lo: float, hue_hi: float) -> bool:
@@ -113,6 +129,8 @@ def main() -> int:
     parser.add_argument("--band", type=int, default=9, help="Edge-band width for the --base rule")
     parser.add_argument("--hue-lo", type=float, default=8.0, help="Skin hue range, degrees")
     parser.add_argument("--hue-hi", type=float, default=48.0)
+    parser.add_argument("--no-refilter", action="store_true", help="Skip the post-defringe largest_blobs pass (keeps orphaned fragments defringe can create)")
+    parser.add_argument("--refilter-min-blob", type=int, default=2000, help="Size threshold for the post-defringe re-filter")
     parser.add_argument("--preview-scale", type=float, default=0.5)
     args = parser.parse_args()
 
@@ -127,6 +145,14 @@ def main() -> int:
     img, n = drop_thin_skin(img, args.thin_radius, args.hue_lo, args.hue_hi)
     print(f"thin-structure rule dropped {n}")
     total += n
+
+    if not args.no_refilter:
+        before = sum(1 for p in img.getdata() if p[3] > 0)
+        img = extract_clothing.largest_blobs(img, args.refilter_min_blob)
+        after = sum(1 for p in img.getdata() if p[3] > 0)
+        if before != after:
+            print(f"post-defringe re-filter dropped {before - after} orphaned fragments")
+            total += before - after
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
