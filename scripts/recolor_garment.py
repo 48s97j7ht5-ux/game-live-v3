@@ -35,10 +35,17 @@ def recolor(img: Image.Image, target_hsv: tuple[float, float, float], v_lo: floa
     w, h = img.size
     px = img.load()
 
-    values = [colorsys.rgb_to_hsv(*(c / 255 for c in px[x, y][:3]))[2] for y in range(h) for x in range(w) if px[x, y][3] > 0]
+    values = sorted(colorsys.rgb_to_hsv(*(c / 255 for c in px[x, y][:3]))[2] for y in range(h) for x in range(w) if px[x, y][3] > 0)
     if not values:
         raise SystemExit("garment layer is empty")
-    vmin, vmax = min(values), max(values)
+    # 2nd/98th percentile, not true min/max: a thin sliver of outline pixels
+    # (the character's own dark linework, included wherever it crosses the
+    # layer) can sit far outside the fill's real tonal range and otherwise
+    # hijacks the whole span -- on a skin patch, where >98% of pixels cluster
+    # in a narrow bright band, true min/max compresses that real shading into
+    # an invisible sliver near v_hi and reads as flat.
+    n = len(values)
+    vmin, vmax = values[int(n * 0.02)], values[int(n * 0.98)]
     span = (vmax - vmin) or 1e-6
 
     th, ts, _ = target_hsv
@@ -52,7 +59,7 @@ def recolor(img: Image.Image, target_hsv: tuple[float, float, float], v_lo: floa
                 continue
             _, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
             # remap this pixel's position within the garment's own tonal range
-            t = (v - vmin) / span
+            t = max(0.0, min(1.0, (v - vmin) / span))
             nv = v_lo + t * (v_hi - v_lo)
             # blend original saturation in so fabric detail that lived in
             # saturation (seams, prints) isn't flattened away
