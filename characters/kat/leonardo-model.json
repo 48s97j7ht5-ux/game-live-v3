@@ -1,0 +1,16 @@
+{
+  "schema": "game-live-v3/leonardo-model/1",
+  "character_id": "kat",
+  "provider": "leonardo",
+  "dataset_id": "073f7ca2-e93a-4d63-8617-b46b2dcd9b26",
+  "model_id": "5c4c5e8c-7b5e-48cc-9329-f82724f92807",
+  "model_name": "kat-character-v1",
+  "instance_prompt": "katchar",
+  "model_type": "CHARACTERS",
+  "resolution": 1024,
+  "sd_version": "v1_5",
+  "trained_at": "2026-08-26",
+  "training_cost_usd": 2.2425,
+  "dataset_images": 14,
+  "notes": "Dataset is all front-facing full-body; expect weaker results on portraits/other angles. Add 3/4 and profile shots to the same dataset and train v2 if needed - the model itself cannot be incrementally retrained."
+}
