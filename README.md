@@ -36,6 +36,8 @@ python3 scripts/compose.py characters/test/assemble.json
 
 **Фабрика персонажей (автогенерация — MagicPixel AI или чистая процедурная геометрия без AI):** **[`docs/character-factory.md`](docs/character-factory.md)**.
 
+**Разбор персонажа на сменные слои** (тело, волосы, черты лица, гардероб; перенос одежды между позами, перекраска): **[`docs/character-layers.md`](docs/character-layers.md)**.
+
 Опционально: **[`docs/magic-pixel-api.md`](docs/magic-pixel-api.md)** — только если позже включите API/Vite.
 
 **Телефон + Cloud Agent:** **[`docs/workflow-mobile.md`](docs/workflow-mobile.md)**.
