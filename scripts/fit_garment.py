@@ -69,12 +69,13 @@ def feet_anchor(mask: Image.Image) -> tuple[int, int]:
     return bottom, sum(xs) // len(xs)
 
 
-def fit(body: Image.Image, garment: Image.Image, source_body: Image.Image | None, margin: int, mask_out: bool) -> tuple[Image.Image, int]:
+def fit(body: Image.Image, garment: Image.Image, source_body: Image.Image | None, margin: int, mask_out: bool, nudge_y: int = 0) -> tuple[Image.Image, int]:
     dx = dy = 0
     if source_body is not None:
         sb, sc = feet_anchor(silhouette(source_body))
         db, dc = feet_anchor(silhouette(body))
         dx, dy = dc - sc, db - sb
+    dy += nudge_y
 
     body = body.convert("RGBA")
     garment = garment.convert("RGBA")
@@ -108,6 +109,7 @@ def main() -> int:
     parser.add_argument("--source-body", help="Body the garment was cut from; enables feet/leg-centre re-anchoring")
     parser.add_argument("--margin", type=int, default=9, help="How far outside the body silhouette clothing may still sit")
     parser.add_argument("--no-mask", action="store_true", help="Skip silhouette masking (keeps ghost limbs)")
+    parser.add_argument("--nudge-y", type=int, default=0, help="Extra vertical shift in px, on top of feet-anchoring (negative = up). Whole garment moves together, not just the neckline.")
     parser.add_argument("--preview-scale", type=float, default=0.5)
     args = parser.parse_args()
 
@@ -115,7 +117,7 @@ def main() -> int:
     garment = Image.open(args.garment)
     source = Image.open(args.source_body) if args.source_body else None
 
-    out, dropped = fit(body, garment, source, args.margin, not args.no_mask)
+    out, dropped = fit(body, garment, source, args.margin, not args.no_mask, args.nudge_y)
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
