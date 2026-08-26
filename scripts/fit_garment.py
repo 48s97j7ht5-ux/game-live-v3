@@ -69,7 +69,7 @@ def feet_anchor(mask: Image.Image) -> tuple[int, int]:
     return bottom, sum(xs) // len(xs)
 
 
-def fit(body: Image.Image, garment: Image.Image, source_body: Image.Image | None, margin: int, mask_out: bool, nudge_x: int = 0, nudge_y: int = 0) -> tuple[Image.Image, int]:
+def fit(body: Image.Image, garment: Image.Image, source_body: Image.Image | None, margin: int, mask_out: bool, nudge_x: int = 0, nudge_y: int = 0, rotate: float = 0.0) -> tuple[Image.Image, int]:
     dx = dy = 0
     if source_body is not None:
         sb, sc = feet_anchor(silhouette(source_body))
@@ -81,6 +81,11 @@ def fit(body: Image.Image, garment: Image.Image, source_body: Image.Image | None
     body = body.convert("RGBA")
     garment = garment.convert("RGBA")
     w, h = body.size
+
+    if rotate:
+        bbox = garment.getbbox()
+        pivot = ((bbox[0] + bbox[2]) // 2, (bbox[1] + bbox[3]) // 2) if bbox else (garment.width // 2, garment.height // 2)
+        garment = garment.rotate(rotate, resample=Image.BICUBIC, center=pivot, fillcolor=(0, 0, 0, 0))
 
     shifted = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     shifted.paste(garment, (dx, dy))
@@ -112,6 +117,7 @@ def main() -> int:
     parser.add_argument("--no-mask", action="store_true", help="Skip silhouette masking (keeps ghost limbs)")
     parser.add_argument("--nudge-x", type=int, default=0, help="Extra horizontal shift in px, on top of feet-anchoring. Whole garment moves together, not just the neckline.")
     parser.add_argument("--nudge-y", type=int, default=0, help="Extra vertical shift in px, on top of feet-anchoring (negative = up). Whole garment moves together, not just the neckline.")
+    parser.add_argument("--rotate", type=float, default=0.0, help="Rotate the whole garment, degrees, about its own bbox centre, before placing. A rigid rotation fixes one edge at the cost of tilting the rest -- see character-layers.md before reaching for this.")
     parser.add_argument("--preview-scale", type=float, default=0.5)
     args = parser.parse_args()
 
@@ -119,7 +125,7 @@ def main() -> int:
     garment = Image.open(args.garment)
     source = Image.open(args.source_body) if args.source_body else None
 
-    out, dropped = fit(body, garment, source, args.margin, not args.no_mask, args.nudge_x, args.nudge_y)
+    out, dropped = fit(body, garment, source, args.margin, not args.no_mask, args.nudge_x, args.nudge_y, args.rotate)
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
