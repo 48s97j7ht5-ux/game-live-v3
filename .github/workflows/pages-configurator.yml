@@ -7,6 +7,7 @@ on:
       - "configurator/**"
       - "compositor/**"
       - "face-compositor/**"
+      - "pixel-editor/**"
       - "templates/**"
       - "characters/**"
       - "site/**"
@@ -36,6 +37,7 @@ jobs:
           cp -r configurator _site/configurator
           cp -r compositor _site/compositor
           cp -r face-compositor _site/face-compositor
+          cp -r pixel-editor _site/pixel-editor
           cp -r templates _site/templates
           cp -r characters _site/characters
           cp site/index.html _site/index.html
