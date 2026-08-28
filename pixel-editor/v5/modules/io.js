@@ -1,0 +1,10 @@
+import{W,H,createCanvas}from'../core/app.js';
+export default{ id:'io',mount(app){
+  async function loadKat(){try{const txt=await(await fetch('../assets/kat-v1_1.b64.txt?v=5')).text(),raw=atob(txt.trim()),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);const url=URL.createObjectURL(new Blob([bytes],{type:'image/png'})),im=new Image();im.onload=()=>{app.history.push();const c=createCanvas();c.getContext('2d').drawImage(im,0,0,W,H);app.layers.importCanvas(c,'kat_v1_1_composite');URL.revokeObjectURL(url);app.emit('status','Kat V1.1 loaded')};im.src=url}catch(e){app.emit('status','Kat load error: '+e.message)}}
+  document.getElementById('loadKat').onclick=loadKat;
+  document.getElementById('spriteFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{app.history.push();const c=createCanvas();c.getContext('2d').drawImage(im,0,0,W,H);app.layers.importCanvas(c,'composite_import');URL.revokeObjectURL(im.src)};im.src=URL.createObjectURL(f)};
+  document.getElementById('refFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const ref=document.getElementById('ref'),ctx=ref.getContext('2d');ctx.clearRect(0,0,W,H);ctx.imageSmoothingEnabled=false;const s=Math.min(W/im.width,H/im.height),dw=Math.round(im.width*s),dh=Math.round(im.height*s);ctx.drawImage(im,Math.round((W-dw)/2),Math.round((H-dh)/2),dw,dh);URL.revokeObjectURL(im.src)};im.src=URL.createObjectURL(f)};
+  document.getElementById('export').onclick=()=>{app.compositor.render();const a=document.createElement('a');a.download='kat-composite-135x400.png';a.href=app.compositor.canvas.toDataURL('image/png');a.click()};
+  document.getElementById('exportLayer').onclick=()=>{const l=app.layers.active();if(!l)return;const a=document.createElement('a');a.download=l.name+'.png';a.href=l.canvas.toDataURL('image/png');a.click()};
+  if(new URLSearchParams(location.search).get('kat')==='1')loadKat();
+}};
