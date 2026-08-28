@@ -1,0 +1,26 @@
+{
+  "schema": "pixel-lab/layers-v1",
+  "character": "kat",
+  "pose": "arms_up",
+  "canvas": {"w": 135, "h": 400},
+  "layers": [
+    {"id":"body_base","group":"body","slot":"body_base","z":10,"file":"assets/layers/kat/pose_arms_up/body/kat__arms_up__body__base__v1.png","visible":true,"locked":false,"opacity":1},
+    {"id":"body_details","group":"body","slot":"body_details","z":20,"file":"assets/layers/kat/pose_arms_up/body/kat__arms_up__body__details__v1.png","visible":true,"locked":false,"opacity":1},
+    {"id":"face_eyes_default","group":"face","slot":"eyes","z":30,"file":"assets/layers/kat/pose_arms_up/face/kat__arms_up__face__eyes__default.png","visible":true,"locked":false,"opacity":1},
+    {"id":"face_brows_default","group":"face","slot":"brows","z":40,"file":"assets/layers/kat/pose_arms_up/face/kat__arms_up__face__brows__default.png","visible":true,"locked":false,"opacity":1},
+    {"id":"face_nose_default","group":"face","slot":"nose","z":50,"file":"assets/layers/kat/pose_arms_up/face/kat__arms_up__face__nose__default.png","visible":true,"locked":false,"opacity":1},
+    {"id":"face_mouth_default","group":"face","slot":"mouth","z":60,"file":"assets/layers/kat/pose_arms_up/face/kat__arms_up__face__mouth__default.png","visible":true,"locked":false,"opacity":1},
+    {"id":"hair_back_twintails","group":"hair","slot":"hair_back","z":70,"file":"assets/layers/kat/pose_arms_up/hair/kat__arms_up__hair__back__twintails.png","visible":true,"locked":false,"opacity":1},
+    {"id":"accessory_back","group":"accessories","slot":"accessory_back","z":80,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"underwear_top","group":"clothes","slot":"underwear_top","z":90,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"underwear_bottom","group":"clothes","slot":"underwear_bottom","z":100,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"top","group":"clothes","slot":"top","z":110,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"bottom","group":"clothes","slot":"bottom","z":120,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"onepiece","group":"clothes","slot":"onepiece","z":130,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"dress","group":"clothes","slot":"dress","z":140,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"stockings","group":"clothes","slot":"stockings","z":150,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"shoes","group":"shoes","slot":"shoes","z":160,"file":null,"visible":true,"locked":false,"opacity":1},
+    {"id":"hair_front_twintails","group":"hair","slot":"hair_front","z":170,"file":"assets/layers/kat/pose_arms_up/hair/kat__arms_up__hair__front__twintails.png","visible":true,"locked":false,"opacity":1},
+    {"id":"accessory_front","group":"accessories","slot":"accessory_front","z":180,"file":null,"visible":true,"locked":false,"opacity":1}
+  ]
+}
