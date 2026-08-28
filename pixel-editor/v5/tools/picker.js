@@ -1,0 +1,1 @@
+export default{ id:'picker',label:'🎯 Pick',apply(app,x,y){const d=app.compositor.ctx.getImageData(x,y,1,1).data;if(d[3]){app.state.color='#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');app.emit('color:changed',app.state.color)}} };
