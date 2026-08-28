@@ -1,0 +1,17 @@
+{
+  "schema": "pixel-lab/assembly-v1",
+  "character": "kat",
+  "pose": "arms_up",
+  "canvas": {"w": 135, "h": 400},
+  "active_layers": [
+    "body_base",
+    "body_details",
+    "face_eyes_default",
+    "face_brows_default",
+    "face_nose_default",
+    "face_mouth_default",
+    "hair_back_twintails",
+    "onepiece",
+    "hair_front_twintails"
+  ]
+}
