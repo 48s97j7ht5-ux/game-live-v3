@@ -21,8 +21,8 @@ export default{
     function markTools(){dock.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('activeBtn',b.dataset.tool===app.state.activeTool))}
     function closeSheet(){if(sheet)sheet.classList.remove('mobileSheetOpen');sheet=null;scrim.classList.remove('show')}
     function openSheet(card){closeSheet();sheet=card;card.classList.add('mobileSheetOpen');scrim.classList.add('show')}
-    function setWorkspace(mode){closeSheet();workspace=mode;body.dataset.mobileWorkspace=mode;const pb=dock.querySelector('[data-mob="preview"]');pb.classList.toggle('activeBtn',mode==='preview');pb.querySelector('small').textContent=mode==='preview'?'Loupe':'Preview';refreshTop()}
-    function applyMode(){const on=mq.matches;body.classList.toggle('pixelLabMobile',on);top.hidden=!on;dock.hidden=!on;scrim.hidden=!on;if(on){setWorkspace('loupe');refreshTop();markTools()}else{closeSheet();delete body.dataset.mobileWorkspace}}
+    function setWorkspace(mode){closeSheet();workspace=mode;body.dataset.mobileWorkspace=mode;const pb=dock.querySelector('[data-mob="preview"]');pb.classList.toggle('activeBtn',mode==='preview');pb.querySelector('small').textContent=mode==='preview'?'Loupe':'Preview';refreshTop();app.emit('mobile:workspace',mode)}
+    function applyMode(){const on=mq.matches;body.classList.toggle('pixelLabMobile',on);top.hidden=!on;dock.hidden=!on;scrim.hidden=!on;if(on){setWorkspace('loupe');refreshTop();markTools()}else{closeSheet();delete body.dataset.mobileWorkspace;app.emit('mobile:workspace','desktop')}}
 
     dock.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{app.setTool(b.dataset.tool);markTools()});
     top.querySelector('[data-mob="layers-top"]').onclick=()=>openSheet(layersCard);
