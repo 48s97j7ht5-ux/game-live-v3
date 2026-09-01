@@ -21,11 +21,12 @@ export default{
     function renderMask(){
       bc.clearRect(0,0,W,H);
       if(mode!=='magenta')return;
-      const rd=ref.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;
+      const useRef=app.referenceVisibility?.visible!==false;
+      const rd=useRef?ref.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data:null;
       const pd=paint.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;
       const out=bc.createImageData(W,H),d=out.data;
       for(let i=0;i<W*H;i++){
-        if(opaqueAt(rd,i)||opaqueAt(pd,i))continue;
+        if((useRef&&opaqueAt(rd,i))||opaqueAt(pd,i))continue;
         const q=i*4;d[q]=255;d[q+1]=0;d[q+2]=255;d[q+3]=255;
       }
       bc.putImageData(out,0,0);
@@ -43,17 +44,19 @@ export default{
     app.on('loupe:background',info=>{
       if(mode!=='magenta'||!info?.ctx)return;
       const {ctx,s,h,CELL}=info,x0=app.state.cx-h,y0=app.state.cy-h;
-      const rc=ref.getContext('2d',{willReadFrequently:true}),pc=paint.getContext('2d',{willReadFrequently:true});
+      const useRef=app.referenceVisibility?.visible!==false;
+      const rc=useRef?ref.getContext('2d',{willReadFrequently:true}):null,pc=paint.getContext('2d',{willReadFrequently:true});
       ctx.save();ctx.fillStyle=MAGENTA;
       for(let y=0;y<s;y++)for(let x=0;x<s;x++){
         const sx=x0+x,sy=y0+y;
         if(sx<0||sy<0||sx>=W||sy>=H){ctx.fillRect(x*CELL,y*CELL,CELL,CELL);continue}
-        const ra=rc.getImageData(sx,sy,1,1).data[3],pa=pc.getImageData(sx,sy,1,1).data[3];
+        const ra=useRef?rc.getImageData(sx,sy,1,1).data[3]:0,pa=pc.getImageData(sx,sy,1,1).data[3];
         if(ra===0&&pa===0)ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
       }
       ctx.restore();
     });
     app.on('reference:changed',()=>{renderMask();app.loupe?.draw()});
+    app.on('reference:visibility',()=>{renderMask();app.loupe?.draw()});
     app.on('composite:rendered',renderMask);
     app.backgroundToggle={get mode(){return mode},toggle,setMode,label,renderMask,bg};
     apply();
