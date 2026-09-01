@@ -1,5 +1,5 @@
+import{describeColor,paletteMatchScore}from'../core/color-metrics.js';
 function rgb(hex){const n=parseInt(hex.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
-function distance(r,g,b,p){const rm=(r+p[0])/2,dr=r-p[0],dg=g-p[1],db=b-p[2];return(2+rm/256)*dr*dr+4*dg*dg+(2+(255-rm)/256)*db*db}
 export default{
   id:'reference-magic',
   mount(app){
@@ -8,8 +8,15 @@ export default{
     const ctx=ref.getContext('2d',{willReadFrequently:true});
     let enabled=false,original=null;
     function colors(){
-      const hex=[...new Set((app.palette?.families||[]).flatMap(f=>f.shades||[]))];
-      return hex.map(h=>({hex:h,rgb:rgb(h)}));
+      const rows=[];
+      for(const family of app.palette?.families||[]){
+        for(const hex of family.shades||[]){
+          const [r,g,b]=rgb(hex);
+          rows.push({hex,family:family.id,...describeColor(r,g,b)});
+        }
+      }
+      const seen=new Set();
+      return rows.filter(c=>!seen.has(c.hex)&&(seen.add(c.hex),true));
     }
     function refreshViews(){app.backgroundToggle?.renderMask?.();app.loupe?.draw();app.emit('reference:magic',{enabled})}
     function capture(){original=ctx.getImageData(0,0,ref.width,ref.height)}
@@ -19,9 +26,13 @@ export default{
       const out=new ImageData(new Uint8ClampedArray(original.data),original.width,original.height),d=out.data;
       for(let i=0;i<d.length;i+=4){
         if(d[i+3]===0)continue;
+        const source=describeColor(d[i],d[i+1],d[i+2]);
         let best=pal[0],score=Infinity;
-        for(const c of pal){const q=distance(d[i],d[i+1],d[i+2],c.rgb);if(q<score){score=q;best=c}}
-        d[i]=best.rgb[0];d[i+1]=best.rgb[1];d[i+2]=best.rgb[2];
+        for(const c of pal){
+          const q=paletteMatchScore(source,c);
+          if(q<score){score=q;best=c}
+        }
+        d[i]=best.r;d[i+1]=best.g;d[i+2]=best.b;
       }
       ctx.putImageData(out,0,0);refreshViews();
     }
