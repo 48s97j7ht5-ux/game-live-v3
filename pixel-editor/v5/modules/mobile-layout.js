@@ -9,16 +9,16 @@ export default{
     const toolsRow=document.getElementById('tools');
     if(!side||!stage||!loupeCard||!layersCard||!paletteCard||!toolsRow)return;
 
-    const top=document.createElement('div');top.className='mobileTop';top.innerHTML='<button data-mob="undo">↶</button><div class="mobileLayerName">layer</div><button class="mobileColor" aria-label="Текущий цвет"></button><button data-mob="files">Files</button>';
-    const layerBar=document.createElement('div');layerBar.className='mobileLoupeLayerBar';layerBar.innerHTML='<button data-mob="layers-top">▤ <span>Layers</span></button>';
+    const top=document.createElement('div');top.className='mobileTop';top.innerHTML='<button data-mob="undo">↶</button><div class="mobileLayerName">Слой</div><button class="mobileColor" aria-label="Текущий цвет"></button><button data-mob="files">Files</button>';
+    const layerBar=document.createElement('div');layerBar.className='mobileLoupeLayerBar';layerBar.innerHTML='<button data-mob="layers-top">▤ <span>Слои</span></button>';
     toolsRow.insertAdjacentElement('afterend',layerBar);
     const dock=document.createElement('div');dock.className='mobileDock';dock.innerHTML='<button data-tool="pencil">✏️<small>Pixel</small></button><button data-tool="eraser">⌫<small>Erase</small></button><button data-tool="picker">🎯<small>Pick</small></button><button data-tool="trace">🧬<small>Trace</small></button><button data-tool="hand">✋<small>Hand</small></button><button data-mob="palette">●<small>Color</small></button><button data-mob="preview">👁<small>Preview</small></button>';
     const scrim=document.createElement('div');scrim.className='mobileScrim';
     body.append(top,scrim,dock);
 
     let workspace='loupe',sheet=null;
-    function activeName(){return app.state.layers?.[app.state.activeLayer]?.name||'layer'}
-    function refreshTop(){const name=activeName();top.querySelector('.mobileLayerName').textContent=name;top.querySelector('.mobileColor').style.background=app.state.color||'#090404';layerBar.querySelector('span').textContent='Layers · '+name}
+    function activeName(){const raw=app.state.layers?.[app.state.activeLayer]?.name||'layer';return app.layerLabels?.get(raw)||raw}
+    function refreshTop(){const name=activeName();top.querySelector('.mobileLayerName').textContent=name;top.querySelector('.mobileColor').style.background=app.state.color||'#090404';layerBar.querySelector('span').textContent='Слои · '+name}
     function markTools(){dock.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('activeBtn',b.dataset.tool===app.state.activeTool))}
     function closeSheet(){if(sheet)sheet.classList.remove('mobileSheetOpen');sheet=null;scrim.classList.remove('show')}
     function openSheet(card){closeSheet();sheet=card;card.classList.add('mobileSheetOpen');scrim.classList.add('show')}
