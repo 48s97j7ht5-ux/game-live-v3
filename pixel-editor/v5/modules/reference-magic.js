@@ -10,7 +10,7 @@ function oklab(r,g,b){
 }
 function oklch(lab){const C=Math.hypot(lab.a,lab.b);let H=Math.atan2(lab.b,lab.a)*180/Math.PI;if(H<0)H+=360;return{L:lab.L,C,H}}
 function hueDiff(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d}
-const CFG={L_WEIGHT:1.8,NEUTRAL_C:.028,HUE_GUARD:22,HUE_FALLBACK:38,L_GUARD:.13,L_FALLBACK:.22,C_GUARD:.035,C_FALLBACK:.07,C_WEIGHT:2.2,LOW_C:.055,LOW_C_MAX_UP:.018,DIR_MIN_C:.012,LOW_C_UP_WEIGHT:5.0};
+const CFG={L_WEIGHT:1.8,NEUTRAL_C:.028,HUE_GUARD:22,HUE_FALLBACK:38,L_GUARD:.13,L_FALLBACK:.22,C_GUARD:.035,C_FALLBACK:.07,C_WEIGHT:2.2,LOW_C:.055,LOW_C_MAX_UP:.010,DIR_MIN_C:.012,DIR_AXIS_MIN:.003,DIR_AXIS_TOL:.002,LOW_C_UP_WEIGHT:6.0};
 export default{
   id:'reference-magic',
   mount(app){
@@ -33,6 +33,13 @@ export default{
       let candidates=pal.filter(c=>hueOk(c,CFG.HUE_GUARD));
       if(!candidates.length)candidates=pal.filter(c=>hueOk(c,CFG.HUE_FALLBACK));
       if(!candidates.length)candidates=pal;
+
+      const axisSafe=candidates.filter(c=>{
+        const aOk=Math.abs(lab.a)<CFG.DIR_AXIS_MIN||Math.abs(c.lab.a)<CFG.DIR_AXIS_TOL||lab.a*c.lab.a>=0;
+        const bOk=Math.abs(lab.b)<CFG.DIR_AXIS_MIN||Math.abs(c.lab.b)<CFG.DIR_AXIS_TOL||lab.b*c.lab.b>=0;
+        return aOk&&bOk;
+      });
+      if(axisSafe.length)candidates=axisSafe;
 
       let light=candidates.filter(c=>Math.abs(src.L-c.lch.L)<=CFG.L_GUARD);
       if(!light.length)light=candidates.filter(c=>Math.abs(src.L-c.lch.L)<=CFG.L_FALLBACK);
