@@ -10,7 +10,7 @@ export default{
     if(!side||!stage||!loupeCard||!layersCard||!paletteCard)return;
 
     const top=document.createElement('div');top.className='mobileTop';top.innerHTML='<button data-mob="undo">↶</button><div class="mobileLayerName">layer</div><button class="mobileColor" aria-label="Текущий цвет"></button><button data-mob="files">Files</button>';
-    const dock=document.createElement('div');dock.className='mobileDock';dock.innerHTML='<button data-tool="pencil">✏️<small>Pixel</small></button><button data-tool="eraser">⌫<small>Erase</small></button><button data-tool="picker">🎯<small>Pick</small></button><button data-tool="hand">✋<small>Hand</small></button><button data-mob="layers">▤<small>Layers</small></button><button data-mob="palette">●<small>Color</small></button><button data-mob="preview">👁<small>Preview</small></button>';
+    const dock=document.createElement('div');dock.className='mobileDock';dock.innerHTML='<button data-tool="pencil">✏️<small>Pixel</small></button><button data-tool="eraser">⌫<small>Erase</small></button><button data-tool="picker">🎯<small>Pick</small></button><button data-tool="trace">🧬<small>Trace</small></button><button data-tool="hand">✋<small>Hand</small></button><button data-mob="layers">▤<small>Layers</small></button><button data-mob="palette">●<small>Color</small></button><button data-mob="preview">👁<small>Preview</small></button>';
     const scrim=document.createElement('div');scrim.className='mobileScrim';
     body.append(top,scrim,dock);
 
