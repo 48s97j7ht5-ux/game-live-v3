@@ -15,13 +15,29 @@ export default{
     const scrim=document.createElement('div');scrim.className='mobileScrim';
     body.append(top,scrim,dock);
 
-    let workspace='loupe',sheet=null;
+    let workspace='loupe',sheet=null,portal=null;
     function activeName(){const raw=app.state.layers?.[app.state.activeLayer]?.name||'layer';return app.layerLabels?.get(raw)||raw}
     function refreshTop(){const name=activeName();top.querySelector('.mobileLayerName').textContent=name;top.querySelector('.mobileColor').style.background=app.state.color||'#090404'}
     function markTools(){dock.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('activeBtn',b.dataset.tool===app.state.activeTool))}
     function refreshBg(){const b=dock.querySelector('[data-mob="bg"]');if(!b)return;const magenta=app.backgroundToggle?.mode==='magenta';b.classList.toggle('activeBtn',magenta);b.querySelector('small').textContent=magenta?'Magenta':'Clear'}
-    function closeSheet(){if(sheet)sheet.classList.remove('mobileSheetOpen');sheet=null;scrim.classList.remove('show')}
-    function openSheet(card){closeSheet();sheet=card;card.classList.add('mobileSheetOpen');scrim.classList.add('show')}
+    function restorePortal(){
+      if(!portal)return;
+      const{card,parent,next}=portal;
+      if(next&&next.parentNode===parent)parent.insertBefore(card,next);else parent.appendChild(card);
+      portal=null;
+    }
+    function closeSheet(){
+      if(sheet)sheet.classList.remove('mobileSheetOpen');
+      restorePortal();sheet=null;scrim.classList.remove('show');
+    }
+    function openSheet(card){
+      closeSheet();
+      if(mq.matches&&card!==filesPanel&&card.parentNode!==body){
+        portal={card,parent:card.parentNode,next:card.nextSibling};
+        body.appendChild(card);
+      }
+      sheet=card;card.classList.add('mobileSheetOpen');scrim.classList.add('show');
+    }
     function setWorkspace(mode){closeSheet();workspace=mode;body.dataset.mobileWorkspace=mode;const pb=dock.querySelector('[data-mob="preview"]');pb.classList.toggle('activeBtn',mode==='preview');pb.querySelector('small').textContent=mode==='preview'?'Loupe':'Preview';refreshTop();refreshBg();app.emit('mobile:workspace',mode)}
     function applyMode(){const on=mq.matches;body.classList.toggle('pixelLabMobile',on);top.hidden=!on;dock.hidden=!on;scrim.hidden=!on;if(on){setWorkspace('loupe');refreshTop();markTools();refreshBg()}else{closeSheet();delete body.dataset.mobileWorkspace;app.emit('mobile:workspace','desktop')}}
 
