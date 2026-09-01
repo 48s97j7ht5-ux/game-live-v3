@@ -7,9 +7,10 @@ export default{
     const layersCard=document.getElementById('layers')?.closest('.card');
     const paletteCard=document.getElementById('palette')?.closest('.card');
     const toolsRow=document.getElementById('tools');
+    const filesPanel=app.mobileFiles?.panel||bar;
     if(!side||!stage||!loupeCard||!layersCard||!paletteCard||!toolsRow)return;
 
-    const top=document.createElement('div');top.className='mobileTop';top.innerHTML='<button data-mob="undo">↶</button><button class="mobileLayerName" data-mob="layers-top" aria-label="Выбрать слой">Слой</button><button class="mobileColor" aria-label="Текущий цвет"></button><button data-mob="files">Files</button>';
+    const top=document.createElement('div');top.className='mobileTop';top.innerHTML='<button data-mob="undo">↶</button><button class="mobileLayerName" data-mob="layers-top" aria-label="Выбрать слой">Слой</button><button class="mobileColor" aria-label="Текущий цвет"></button><button data-mob="files">Файлы</button>';
     const dock=document.createElement('div');dock.className='mobileDock';dock.innerHTML='<button data-tool="pencil">✏️<small>Pixel</small></button><button data-tool="eraser">⌫<small>Erase</small></button><button data-tool="picker">🎯<small>Pick</small></button><button data-tool="trace">🧬<small>Trace</small></button><button data-tool="hand">✋<small>Hand</small></button><button data-mob="palette">●<small>Color</small></button><button data-mob="preview">👁<small>Preview</small></button>';
     const scrim=document.createElement('div');scrim.className='mobileScrim';
     body.append(top,scrim,dock);
@@ -28,8 +29,9 @@ export default{
     dock.querySelector('[data-mob="palette"]').onclick=()=>openSheet(paletteCard);
     dock.querySelector('[data-mob="preview"]').onclick=()=>setWorkspace(workspace==='preview'?'loupe':'preview');
     top.querySelector('[data-mob="undo"]').onclick=()=>app.history?.undo();
-    top.querySelector('[data-mob="files"]').onclick=()=>openSheet(bar);
+    top.querySelector('[data-mob="files"]').onclick=()=>openSheet(filesPanel);
     top.querySelector('.mobileColor').onclick=()=>openSheet(paletteCard);
+    app.mobileFiles?.closeButton?.addEventListener('click',closeSheet);
     scrim.onclick=closeSheet;
     app.on('tool:changed',()=>{markTools();refreshTop()});
     app.on('layers:active',refreshTop);app.on('layers:changed',refreshTop);app.on('color:changed',refreshTop);
