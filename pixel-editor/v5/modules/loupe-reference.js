@@ -6,7 +6,7 @@ export default{
     function drawReference(info){
       if(!info||!ref||app.referenceVisibility?.visible===false)return;
       const {ctx,s,h,CELL}=info;
-      const alpha=Math.max(0,Math.min(1,(+(opacity?.value??25))/100));
+      const alpha=app.referenceDisplay?.alpha??Math.max(0,Math.min(1,(+(opacity?.value??25))/100));
       if(alpha<=0)return;
       const x0=app.state.cx-h,y0=app.state.cy-h;
       ctx.save();
@@ -18,6 +18,7 @@ export default{
     app.on('loupe:background',drawReference);
     app.on('reference:changed',()=>app.loupe?.draw());
     app.on('reference:opacity',()=>app.loupe?.draw());
+    app.on('reference:display',()=>app.loupe?.draw());
     app.on('reference:visibility',()=>app.loupe?.draw());
     app.loupeReference={redraw:()=>app.loupe?.draw()};
   }
