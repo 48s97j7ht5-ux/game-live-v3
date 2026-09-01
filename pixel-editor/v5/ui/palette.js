@@ -12,10 +12,19 @@ function expandShades(anchors,count=20){
   return [...new Set(out)];
 }
 const BASE_FAMILIES=[
-  {id:'gray',base:'#808080',label:'Серый',anchors:['#090909','#1a1a1a','#303030','#464646','#5c5c5c','#737373','#8a8a8a','#adadad','#d1d1d1','#ffffff']},
-  {id:'brown',base:'#8b5a2b',label:'Коричневый / кожа',anchors:['#1f120b','#321d12','#452817','#5a3620','#6b4026','#7f4e2f','#915b37','#ae7148','#c28f72','#dca886','#ebbb96','#f3c8a2','#f8d8b9']},
+  {id:'gray',base:'#808080',label:'Нейтральные',ramps:[
+    {id:'gray',count:10,anchors:['#090909','#1a1a1a','#303030','#464646','#5c5c5c','#737373','#8a8a8a','#adadad','#d1d1d1','#ffffff']},
+    {id:'taupe',count:10,anchors:['#100e0e','#272222','#3f3735','#554a46','#6d5d57','#86716a','#a0867c','#b89a8d','#ceb0a1','#e3c9ba','#f4dfd3']}
+  ]},
+  {id:'brown',base:'#8b5a2b',label:'Коричневый / кожа',ramps:[
+    {id:'brown',count:10,anchors:['#1f120b','#321d12','#452817','#5a3620','#6b4026','#7f4e2f','#915b37','#ae7148']},
+    {id:'skin-soft',count:10,anchors:['#6b4038','#865443','#a06454','#b97860','#d08f73','#dca886','#ebbb96','#f3c8a2','#f8d8b9','#fff0e4']}
+  ]},
   {id:'red',base:'#e53935',label:'Красный',anchors:['#3a0909','#521010','#6c1313','#8f1717','#a91c1c','#c92323','#df3030','#f15858','#f88989','#ffc1c1']},
-  {id:'orange',base:'#f57c00',label:'Оранжевый',anchors:['#402000','#592c00','#713800','#8b4300','#a04d00','#bd5900','#d96a00','#ff9635','#ffb56a','#ffd5a5']},
+  {id:'orange',base:'#f57c00',label:'Оранжевый / тёплая кожа',ramps:[
+    {id:'orange',count:10,anchors:['#402000','#713800','#a04d00','#d96a00','#ff9635','#ffb56a','#ffd5a5']},
+    {id:'skin-gold',count:10,anchors:['#6e392d','#8f4c38','#ad6247','#c97958','#df8f68','#ed9f78','#f7ad84','#fab791','#ffc7a6','#ffd9bf']}
+  ]},
   {id:'yellow',base:'#fbc02d',label:'Жёлтый',anchors:['#3b3100','#514300','#675500','#7c6700','#917800','#aa8e00','#c6a800','#f5db49','#ffeb80','#fff5b8']},
   {id:'green',base:'#43a047',label:'Зелёный',anchors:['#092d12','#0d4019','#115221','#156429','#19752e','#208837','#299c41','#65cc72','#91e09a','#c3f4c8']},
   {id:'cyan',base:'#00acc1',label:'Cyan',anchors:['#00353b','#004953','#005d68','#00717f','#008493','#0099aa','#00aabd','#59dce7','#91ebf1','#c5f7fa']},
@@ -23,7 +32,11 @@ const BASE_FAMILIES=[
   {id:'purple',base:'#8e44ad',label:'Фиолетовый',anchors:['#250d32','#341244','#42185a','#511d6d','#60227f','#702892','#7d2fa1','#b76bd0','#d19ae1','#eac8f1']},
   {id:'pink',base:'#e84393',label:'Розовый',anchors:['#3b0b25','#511033','#671341','#7e184f','#941c5f','#aa226d','#be287a','#ed70ad','#f39bc5','#fac7de']}
 ];
-const FAMILIES=BASE_FAMILIES.map(f=>({...f,shades:expandShades(f.anchors,20)}));
+const FAMILIES=BASE_FAMILIES.map(f=>{
+  const specs=f.ramps||[{id:f.id,count:20,anchors:f.anchors}];
+  const ramps=specs.map(r=>({id:r.id,shades:expandShades(r.anchors,r.count||10)}));
+  return{...f,ramps,shades:ramps.flatMap(r=>r.shades)};
+});
 export default{
   id:'palette',
   mount(app){
@@ -41,7 +54,7 @@ export default{
     function renderShades(){
       shades.innerHTML='';
       const family=FAMILIES.find(f=>f.id===activeFamily)||FAMILIES[0];
-      for(const c of family.shades){const b=document.createElement('button');b.type='button';b.className='sw paletteShade';b.dataset.color=c;b.style.background=c;b.title=c;b.setAttribute('aria-label',`${family.label} ${c}`);b.onclick=()=>chooseColor(c);shades.appendChild(b)}
+      for(const c of family.shades){const b=document.createElement('button');b.type='button';b.className='sw paletteShade';b.dataset.color=c;b.style.background=c;b.title=c;b.setAttribute('aria-label',family.label+' '+c);b.onclick=()=>chooseColor(c);shades.appendChild(b)}
       markShade();
     }
     function selectFamily(id){activeFamily=id;families.querySelectorAll('.paletteFamily').forEach(b=>b.classList.toggle('activeBtn',b.dataset.family===id));renderShades()}
