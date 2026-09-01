@@ -21,26 +21,17 @@ export default{
     function markTools(){dock.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('activeBtn',b.dataset.tool===app.state.activeTool))}
     function refreshBg(){const b=top.querySelector('[data-mob="bg"]');if(!b)return;const magenta=app.backgroundToggle?.mode==='magenta';b.classList.toggle('activeBtn',magenta);b.textContent=magenta?'🟪':'⬛'}
     function refreshRef(){const b=top.querySelector('[data-mob="ref"]');if(!b)return;const visible=app.referenceVisibility?.visible!==false;b.classList.toggle('activeBtn',visible);b.textContent=visible?'👁 Ref':'○ Ref'}
-    function restorePortal(){
-      if(!portal)return;
-      const{card,parent,next}=portal;
-      if(next&&next.parentNode===parent)parent.insertBefore(card,next);else parent.appendChild(card);
-      portal=null;
+    function restorePortal(){if(!portal)return;const{card,parent,next}=portal;if(next&&next.parentNode===parent)parent.insertBefore(card,next);else parent.appendChild(card);portal=null}
+    function closeSheet(){if(sheet)sheet.classList.remove('mobileSheetOpen');restorePortal();sheet=null;scrim.classList.remove('show')}
+    function openSheet(card){closeSheet();if(mq.matches&&card!==filesPanel&&card.parentNode!==body){portal={card,parent:card.parentNode,next:card.nextSibling};body.appendChild(card)}sheet=card;card.classList.add('mobileSheetOpen');scrim.classList.add('show')}
+    function setWorkspace(mode){
+      closeSheet();workspace=mode;body.dataset.mobileWorkspace=mode;
+      app.state.viewMode=mode==='preview'?'composite':'underlay';
+      app.emit('composite:dirty');
+      const pb=dock.querySelector('[data-mob="preview"]');pb.classList.toggle('activeBtn',mode==='preview');pb.querySelector('small').textContent=mode==='preview'?'Loupe':'Preview';
+      refreshTop();refreshBg();refreshRef();app.emit('mobile:workspace',mode)
     }
-    function closeSheet(){
-      if(sheet)sheet.classList.remove('mobileSheetOpen');
-      restorePortal();sheet=null;scrim.classList.remove('show');
-    }
-    function openSheet(card){
-      closeSheet();
-      if(mq.matches&&card!==filesPanel&&card.parentNode!==body){
-        portal={card,parent:card.parentNode,next:card.nextSibling};
-        body.appendChild(card);
-      }
-      sheet=card;card.classList.add('mobileSheetOpen');scrim.classList.add('show');
-    }
-    function setWorkspace(mode){closeSheet();workspace=mode;body.dataset.mobileWorkspace=mode;const pb=dock.querySelector('[data-mob="preview"]');pb.classList.toggle('activeBtn',mode==='preview');pb.querySelector('small').textContent=mode==='preview'?'Loupe':'Preview';refreshTop();refreshBg();refreshRef();app.emit('mobile:workspace',mode)}
-    function applyMode(){const on=mq.matches;body.classList.toggle('pixelLabMobile',on);top.hidden=!on;dock.hidden=!on;scrim.hidden=!on;if(on){setWorkspace('loupe');refreshTop();markTools();refreshBg();refreshRef()}else{closeSheet();delete body.dataset.mobileWorkspace;app.emit('mobile:workspace','desktop')}}
+    function applyMode(){const on=mq.matches;body.classList.toggle('pixelLabMobile',on);top.hidden=!on;dock.hidden=!on;scrim.hidden=!on;if(on){setWorkspace('loupe');refreshTop();markTools();refreshBg();refreshRef()}else{closeSheet();delete body.dataset.mobileWorkspace;app.state.viewMode='composite';app.emit('composite:dirty');app.emit('mobile:workspace','desktop')}}
 
     dock.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{app.setTool(b.dataset.tool);markTools()});
     top.querySelector('[data-mob="layers-top"]').onclick=()=>openSheet(layersCard);
