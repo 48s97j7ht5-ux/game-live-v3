@@ -16,7 +16,7 @@ export default{
     function renderScale(next){
       scale=clamp(next,.5,8);
       board.style.width=W*scale+'px';board.style.height=H*scale+'px';
-      [paint,ref,overlay].forEach(c=>{c.style.width=W*scale+'px';c.style.height=H*scale+'px'});
+      board.querySelectorAll('canvas').forEach(c=>{c.style.width=W*scale+'px';c.style.height=H*scale+'px'});
       applyTransform();
       app.emit('preview:scale',scale);
     }
