@@ -1,15 +1,29 @@
-const FAMILIES=[
-  {id:'gray',base:'#808080',label:'Серый',shades:['#090909','#1a1a1a','#303030','#464646','#5c5c5c','#737373','#8a8a8a','#adadad','#d1d1d1','#ffffff']},
-  {id:'brown',base:'#8b5a2b',label:'Коричневый',shades:['#1f120b','#321d12','#452817','#5a3620','#6b4026','#7f4e2f','#915b37','#ae7148','#ce936a','#edc19b']},
-  {id:'red',base:'#e53935',label:'Красный',shades:['#3a0909','#521010','#6c1313','#8f1717','#a91c1c','#c92323','#df3030','#f15858','#f88989','#ffc1c1']},
-  {id:'orange',base:'#f57c00',label:'Оранжевый',shades:['#402000','#592c00','#713800','#8b4300','#a04d00','#bd5900','#d96a00','#ff9635','#ffb56a','#ffd5a5']},
-  {id:'yellow',base:'#fbc02d',label:'Жёлтый',shades:['#3b3100','#514300','#675500','#7c6700','#917800','#aa8e00','#c6a800','#f5db49','#ffeb80','#fff5b8']},
-  {id:'green',base:'#43a047',label:'Зелёный',shades:['#092d12','#0d4019','#115221','#156429','#19752e','#208837','#299c41','#65cc72','#91e09a','#c3f4c8']},
-  {id:'cyan',base:'#00acc1',label:'Cyan',shades:['#00353b','#004953','#005d68','#00717f','#008493','#0099aa','#00aabd','#59dce7','#91ebf1','#c5f7fa']},
-  {id:'blue',base:'#1e88e5',label:'Синий',shades:['#071d3d','#0a2954','#0d356a','#11417f','#144d98','#185aad','#1b67c5','#5ca1ef','#8fc0f7','#c5e0fc']},
-  {id:'purple',base:'#8e44ad',label:'Фиолетовый',shades:['#250d32','#341244','#42185a','#511d6d','#60227f','#702892','#7d2fa1','#b76bd0','#d19ae1','#eac8f1']},
-  {id:'pink',base:'#e84393',label:'Розовый',shades:['#3b0b25','#511033','#671341','#7e184f','#941c5f','#aa226d','#be287a','#ed70ad','#f39bc5','#fac7de']}
+function hexRgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+function rgbHex(r,g,b){return'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('')}
+function expandShades(anchors,count=20){
+  if(!anchors.length||count<=0)return[];
+  if(anchors.length===1)return Array(count).fill(anchors[0]);
+  const out=[];
+  for(let i=0;i<count;i++){
+    const t=i/(count-1)*(anchors.length-1),a=Math.floor(t),b=Math.min(anchors.length-1,a+1),f=t-a;
+    const c0=hexRgb(anchors[a]),c1=hexRgb(anchors[b]);
+    out.push(rgbHex(c0[0]+(c1[0]-c0[0])*f,c0[1]+(c1[1]-c0[1])*f,c0[2]+(c1[2]-c0[2])*f));
+  }
+  return [...new Set(out)];
+}
+const BASE_FAMILIES=[
+  {id:'gray',base:'#808080',label:'Серый',anchors:['#090909','#1a1a1a','#303030','#464646','#5c5c5c','#737373','#8a8a8a','#adadad','#d1d1d1','#ffffff']},
+  {id:'brown',base:'#8b5a2b',label:'Коричневый',anchors:['#1f120b','#321d12','#452817','#5a3620','#6b4026','#7f4e2f','#915b37','#ae7148','#ce936a','#edc19b']},
+  {id:'red',base:'#e53935',label:'Красный',anchors:['#3a0909','#521010','#6c1313','#8f1717','#a91c1c','#c92323','#df3030','#f15858','#f88989','#ffc1c1']},
+  {id:'orange',base:'#f57c00',label:'Оранжевый',anchors:['#402000','#592c00','#713800','#8b4300','#a04d00','#bd5900','#d96a00','#ff9635','#ffb56a','#ffd5a5']},
+  {id:'yellow',base:'#fbc02d',label:'Жёлтый',anchors:['#3b3100','#514300','#675500','#7c6700','#917800','#aa8e00','#c6a800','#f5db49','#ffeb80','#fff5b8']},
+  {id:'green',base:'#43a047',label:'Зелёный',anchors:['#092d12','#0d4019','#115221','#156429','#19752e','#208837','#299c41','#65cc72','#91e09a','#c3f4c8']},
+  {id:'cyan',base:'#00acc1',label:'Cyan',anchors:['#00353b','#004953','#005d68','#00717f','#008493','#0099aa','#00aabd','#59dce7','#91ebf1','#c5f7fa']},
+  {id:'blue',base:'#1e88e5',label:'Синий',anchors:['#071d3d','#0a2954','#0d356a','#11417f','#144d98','#185aad','#1b67c5','#5ca1ef','#8fc0f7','#c5e0fc']},
+  {id:'purple',base:'#8e44ad',label:'Фиолетовый',anchors:['#250d32','#341244','#42185a','#511d6d','#60227f','#702892','#7d2fa1','#b76bd0','#d19ae1','#eac8f1']},
+  {id:'pink',base:'#e84393',label:'Розовый',anchors:['#3b0b25','#511033','#671341','#7e184f','#941c5f','#aa226d','#be287a','#ed70ad','#f39bc5','#fac7de']}
 ];
+const FAMILIES=BASE_FAMILIES.map(f=>({...f,shades:expandShades(f.anchors,20)}));
 export default{
   id:'palette',
   mount(app){
