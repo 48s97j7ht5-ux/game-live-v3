@@ -43,6 +43,8 @@ export default{
       app.state.cy=clamp(Math.floor((clientY-r.top)*H/r.height),0,H-1);
       app.loupe?.draw();
       app.emit('loupe:moved',{x:app.state.cx,y:app.state.cy});
+      const tool=app.activeTool();
+      if(tool?.id==='picker')tool.apply(app,app.state.cx,app.state.cy);
     }
     function down(e){
       if(!isMobilePreview())return;
