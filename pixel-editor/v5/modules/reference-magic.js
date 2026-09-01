@@ -10,54 +10,70 @@ function oklab(r,g,b){
 }
 function oklch(lab){const C=Math.hypot(lab.a,lab.b);let H=Math.atan2(lab.b,lab.a)*180/Math.PI;if(H<0)H+=360;return{L:lab.L,C,H}}
 function hueDiff(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d}
-const CFG={L_WEIGHT:1.8,NEUTRAL_C:.028,HUE_GUARD:22,HUE_FALLBACK:38,L_GUARD:.13,L_FALLBACK:.22,C_GUARD:.035,C_FALLBACK:.07,C_WEIGHT:2.2};
+const CFG={NEUTRAL_C:.018,FAMILY_H_WEIGHT:1,FAMILY_C_WEIGHT:320,RAMP_L_WEIGHT:3.2,RAMP_C_WEIGHT:2.4,RAMP_H_WEIGHT:.0025};
 export default{
   id:'reference-magic',
   mount(app){
     const ref=document.getElementById('ref');if(!ref)return;
     const ctx=ref.getContext('2d',{willReadFrequently:true});
     let enabled=false,original=null;
-    function colors(){
-      const rows=[],seen=new Set();
-      for(const family of app.palette?.families||[])for(const hex of family.shades||[]){
-        if(seen.has(hex))continue;seen.add(hex);
-        const [r,g,b]=rgb(hex),lab=oklab(r,g,b);rows.push({hex,r,g,b,lab,lch:oklch(lab)});
+
+    function buildRamps(){
+      const ramps=[];
+      for(const family of app.palette?.families||[]){
+        const colors=(family.shades||[]).map(hex=>{const [r,g,b]=rgb(hex),lab=oklab(r,g,b);return{hex,r,g,b,lab,lch:oklch(lab)}}).sort((a,b)=>a.lch.L-b.lch.L);
+        if(!colors.length)continue;
+        const colored=colors.filter(c=>c.lch.C>=CFG.NEUTRAL_C);
+        const sample=colored.length?colored:colors;
+        let sx=0,sy=0,sc=0;
+        for(const c of sample){const rad=c.lch.H*Math.PI/180,w=Math.max(c.lch.C,.01);sx+=Math.cos(rad)*w;sy+=Math.sin(rad)*w;sc+=c.lch.C}
+        let H=Math.atan2(sy,sx)*180/Math.PI;if(H<0)H+=360;
+        ramps.push({id:family.id,colors,H,C:sc/sample.length});
       }
-      return rows;
+      return ramps;
     }
+
     function refreshViews(){app.backgroundToggle?.renderMask?.();app.loupe?.draw();app.emit('reference:magic',{enabled})}
     function capture(){original=ctx.getImageData(0,0,ref.width,ref.height)}
-    function nearest(source,pal){
-      const lab=oklab(source[0],source[1],source[2]),src=oklch(lab);
-      const hueOk=(c,g)=>src.C<CFG.NEUTRAL_C||c.lch.C<CFG.NEUTRAL_C||hueDiff(src.H,c.lch.H)<=g;
-      let candidates=pal.filter(c=>hueOk(c,CFG.HUE_GUARD));
-      if(!candidates.length)candidates=pal.filter(c=>hueOk(c,CFG.HUE_FALLBACK));
-      if(!candidates.length)candidates=pal;
 
-      let light=candidates.filter(c=>Math.abs(src.L-c.lch.L)<=CFG.L_GUARD);
-      if(!light.length)light=candidates.filter(c=>Math.abs(src.L-c.lch.L)<=CFG.L_FALLBACK);
-      if(light.length)candidates=light;
+    function chooseRamp(src,ramps){
+      if(src.C<CFG.NEUTRAL_C){
+        const gray=ramps.find(r=>r.id==='gray');if(gray)return gray;
+      }
+      let best=ramps[0],score=Infinity;
+      for(const ramp of ramps){
+        if(ramp.id==='gray'&&src.C>=CFG.NEUTRAL_C)continue;
+        const dh=hueDiff(src.H,ramp.H);
+        const dc=src.C-ramp.C;
+        const q=dh*dh*CFG.FAMILY_H_WEIGHT+dc*dc*CFG.FAMILY_C_WEIGHT;
+        if(q<score){score=q;best=ramp}
+      }
+      return best;
+    }
 
-      let chroma=candidates.filter(c=>Math.abs(src.C-c.lch.C)<=CFG.C_GUARD);
-      if(!chroma.length)chroma=candidates.filter(c=>Math.abs(src.C-c.lch.C)<=CFG.C_FALLBACK);
-      if(chroma.length)candidates=chroma;
-
-      let best=candidates[0],score=Infinity;
-      for(const c of candidates){
-        const dL=(lab.L-c.lab.L)*CFG.L_WEIGHT,da=lab.a-c.lab.a,db=lab.b-c.lab.b;
-        const dC=(src.C-c.lch.C)*CFG.C_WEIGHT;
-        const q=dL*dL+da*da+db*db+dC*dC;
+    function chooseShade(src,ramp){
+      let best=ramp.colors[0],score=Infinity;
+      for(const c of ramp.colors){
+        const dL=src.L-c.lch.L,dC=src.C-c.lch.C;
+        const dH=(src.C<CFG.NEUTRAL_C||c.lch.C<CFG.NEUTRAL_C)?0:hueDiff(src.H,c.lch.H);
+        const q=dL*dL*CFG.RAMP_L_WEIGHT+dC*dC*CFG.RAMP_C_WEIGHT+dH*dH*CFG.RAMP_H_WEIGHT;
         if(q<score){score=q;best=c}
       }
       return best;
     }
+
+    function nearest(source,ramps){
+      const lab=oklab(source[0],source[1],source[2]),src=oklch(lab);
+      return chooseShade(src,chooseRamp(src,ramps));
+    }
+
     function applyMagic(){
-      if(!original)capture();const pal=colors();if(!pal.length)return;
+      if(!original)capture();const ramps=buildRamps();if(!ramps.length)return;
       const out=new ImageData(new Uint8ClampedArray(original.data),original.width,original.height),d=out.data,cache=new Map();
       for(let i=0;i<d.length;i+=4){
         if(d[i+3]===0)continue;
         const key=(d[i]<<16)|(d[i+1]<<8)|d[i+2];let best=cache.get(key);
-        if(!best){best=nearest([d[i],d[i+1],d[i+2]],pal);cache.set(key,best)}
+        if(!best){best=nearest([d[i],d[i+1],d[i+2]],ramps);cache.set(key,best)}
         d[i]=best.r;d[i+1]=best.g;d[i+2]=best.b;
       }
       ctx.putImageData(out,0,0);refreshViews();
