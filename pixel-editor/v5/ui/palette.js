@@ -13,7 +13,7 @@ function expandShades(anchors,count=20){
 }
 const BASE_FAMILIES=[
   {id:'gray',base:'#808080',label:'Серый',anchors:['#090909','#1a1a1a','#303030','#464646','#5c5c5c','#737373','#8a8a8a','#adadad','#d1d1d1','#ffffff']},
-  {id:'brown',base:'#8b5a2b',label:'Коричневый',anchors:['#1f120b','#321d12','#452817','#5a3620','#6b4026','#7f4e2f','#915b37','#ae7148','#ce936a','#edc19b']},
+  {id:'brown',base:'#8b5a2b',label:'Коричневый / кожа',anchors:['#1f120b','#321d12','#452817','#5a3620','#6b4026','#7f4e2f','#915b37','#ae7148','#c28f72','#dca886','#ebbb96','#f3c8a2','#f8d8b9']},
   {id:'red',base:'#e53935',label:'Красный',anchors:['#3a0909','#521010','#6c1313','#8f1717','#a91c1c','#c92323','#df3030','#f15858','#f88989','#ffc1c1']},
   {id:'orange',base:'#f57c00',label:'Оранжевый',anchors:['#402000','#592c00','#713800','#8b4300','#a04d00','#bd5900','#d96a00','#ff9635','#ffb56a','#ffd5a5']},
   {id:'yellow',base:'#fbc02d',label:'Жёлтый',anchors:['#3b3100','#514300','#675500','#7c6700','#917800','#aa8e00','#c6a800','#f5db49','#ffeb80','#fff5b8']},
