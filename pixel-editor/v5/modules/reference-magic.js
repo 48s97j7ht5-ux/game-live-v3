@@ -10,7 +10,7 @@ function oklab(r,g,b){
 }
 function oklch(lab){const C=Math.hypot(lab.a,lab.b);let H=Math.atan2(lab.b,lab.a)*180/Math.PI;if(H<0)H+=360;return{L:lab.L,C,H}}
 function hueDiff(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d}
-const CFG={L_WEIGHT:1.9,NEUTRAL_C:.028,HUE_GUARD:22,HUE_FALLBACK:38,L_GUARD:.13,L_FALLBACK:.22};
+const CFG={L_WEIGHT:1.8,NEUTRAL_C:.028,HUE_GUARD:22,HUE_FALLBACK:38,L_GUARD:.13,L_FALLBACK:.22,C_GUARD:.035,C_FALLBACK:.07,C_WEIGHT:2.2};
 export default{
   id:'reference-magic',
   mount(app){
@@ -33,12 +33,20 @@ export default{
       let candidates=pal.filter(c=>hueOk(c,CFG.HUE_GUARD));
       if(!candidates.length)candidates=pal.filter(c=>hueOk(c,CFG.HUE_FALLBACK));
       if(!candidates.length)candidates=pal;
+
       let light=candidates.filter(c=>Math.abs(src.L-c.lch.L)<=CFG.L_GUARD);
       if(!light.length)light=candidates.filter(c=>Math.abs(src.L-c.lch.L)<=CFG.L_FALLBACK);
       if(light.length)candidates=light;
+
+      let chroma=candidates.filter(c=>Math.abs(src.C-c.lch.C)<=CFG.C_GUARD);
+      if(!chroma.length)chroma=candidates.filter(c=>Math.abs(src.C-c.lch.C)<=CFG.C_FALLBACK);
+      if(chroma.length)candidates=chroma;
+
       let best=candidates[0],score=Infinity;
       for(const c of candidates){
-        const dL=(lab.L-c.lab.L)*CFG.L_WEIGHT,da=lab.a-c.lab.a,db=lab.b-c.lab.b,q=dL*dL+da*da+db*db;
+        const dL=(lab.L-c.lab.L)*CFG.L_WEIGHT,da=lab.a-c.lab.a,db=lab.b-c.lab.b;
+        const dC=(src.C-c.lch.C)*CFG.C_WEIGHT;
+        const q=dL*dL+da*da+db*db+dC*dC;
         if(q<score){score=q;best=c}
       }
       return best;
