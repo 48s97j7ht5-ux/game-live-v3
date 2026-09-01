@@ -51,26 +51,6 @@ export default{
       }
       return best;
     }
-    function despeckle(out){
-      const w=out.width,h=out.height,d=out.data,src=d.slice();
-      const at=(x,y)=>{if(x<0||y<0||x>=w||y>=h)return null;const i=(y*w+x)*4;return src[i+3]===0?null:[src[i],src[i+1],src[i+2]]};
-      const eq=(a,b)=>a&&b&&a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2];
-      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-        const i=(y*w+x)*4;if(src[i+3]===0)continue;
-        const c=at(x,y);
-        const n4=[at(x-1,y),at(x+1,y),at(x,y-1),at(x,y+1)];
-        if(n4.some(n=>eq(n,c)))continue;
-        const n8=[...n4,at(x-1,y-1),at(x+1,y-1),at(x-1,y+1),at(x+1,y+1)].filter(Boolean);
-        if(!n8.length)continue;
-        const counts=new Map();
-        for(const n of n8){const k=n.join(',');counts.set(k,(counts.get(k)||0)+1)}
-        let bestKey=null,bestCount=0;
-        for(const [k,cnt] of counts)if(cnt>bestCount){bestCount=cnt;bestKey=k}
-        if(bestCount<2||!bestKey)continue;
-        const [r,g,b]=bestKey.split(',').map(Number);
-        d[i]=r;d[i+1]=g;d[i+2]=b;
-      }
-    }
     function applyMagic(){
       if(!original)capture();const pal=colors();if(!pal.length)return;
       const out=new ImageData(new Uint8ClampedArray(original.data),original.width,original.height),d=out.data,cache=new Map();
@@ -80,7 +60,6 @@ export default{
         if(!best){best=nearest([d[i],d[i+1],d[i+2]],pal);cache.set(key,best)}
         d[i]=best.r;d[i+1]=best.g;d[i+2]=best.b;
       }
-      despeckle(out);
       ctx.putImageData(out,0,0);refreshViews();
     }
     function restore(){if(original)ctx.putImageData(original,0,0);refreshViews()}
