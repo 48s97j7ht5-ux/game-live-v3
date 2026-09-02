@@ -1,4 +1,4 @@
-import{W,H}from'../core/app.js?v=20260902-layer-schema1';
+import{W,H}from'#pixel-app';
 
 function safeName(value){return String(value||'layer').replace(/[^a-z0-9._-]+/gi,'_').replace(/^_+|_+$/g,'')||'layer'}
 
@@ -32,7 +32,7 @@ export default{
       try{
         await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('PNG не удалось прочитать'));image.src=url});
         if(image.naturalWidth!==W||image.naturalHeight!==H)throw new Error(`PNG имеет размер ${image.naturalWidth}×${image.naturalHeight}, нужен ${W}×${H}`);
-        app.history.push();
+        app.history.pushLayer(layer);
         const ctx=layer.canvas.getContext('2d');ctx.clearRect(0,0,W,H);ctx.imageSmoothingEnabled=false;ctx.drawImage(image,0,0);
         app.layers.setActive(app.state.layers.indexOf(layer));
         app.emit('layers:changed');app.emit('composite:dirty');app.loupe?.draw();

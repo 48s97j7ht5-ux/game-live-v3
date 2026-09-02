@@ -1,4 +1,4 @@
-import{W,H}from'../core/app.js';
+import{W,H}from'#pixel-app';
 const MAGENTA='#ff00ff';
 export default{
   id:'background-toggle',

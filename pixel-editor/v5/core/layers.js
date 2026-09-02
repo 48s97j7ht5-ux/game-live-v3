@@ -1,4 +1,4 @@
-import{makeLayer,W,H}from'./app.js?v=20260902-layer-schema1';
+import{makeLayer,W,H}from'#pixel-app';
 
 const GROUPS=[
   {id:'character',name:'Персонаж',parentId:null,expanded:true},

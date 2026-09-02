@@ -1,4 +1,4 @@
-import{W,H,makeLayer}from'../core/app.js?v=20260902-layer-schema1';
+import{W,H,makeLayer}from'#pixel-app';
 
 const colorKey=(data,q)=>(data[q]<<16)|(data[q+1]<<8)|data[q+2];
 const saturation=key=>Math.max((key>>16)&255,(key>>8)&255,key&255)-Math.min((key>>16)&255,(key>>8)&255,key&255);
@@ -48,7 +48,7 @@ export default{
         removed=removeEdgeBackground(source,background.key,app.referenceMagic?.enabled?4:24);
       }
       const current=app.state.layers.find(item=>item.id==='body_base');if(current&&!app.layers.canEdit(current))return false;
-      app.history.push();const layer=ensureLayer(),ctx=layer.canvas.getContext('2d');ctx.clearRect(0,0,W,H);ctx.putImageData(source,0,0);
+      (current?app.history.pushLayer(current):app.history.pushStructure());const layer=ensureLayer(),ctx=layer.canvas.getContext('2d');ctx.clearRect(0,0,W,H);ctx.putImageData(source,0,0);
       app.layers.setActive(app.state.layers.indexOf(layer));app.emit('layers:changed');app.emit('composite:dirty');app.loupe?.draw();app.mobileLayout?.closeSheet?.();
       app.emit('status',`Ref перенесён в Цельное тело${removed?' · фон удалён: '+removed+' px':' · прозрачный фон сохранён'}`);return true;
     }

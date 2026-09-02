@@ -100,7 +100,7 @@ export default{
       if(image.naturalWidth!==width||image.naturalHeight!==height)throw new Error(`элемент ${image.naturalWidth}×${image.naturalHeight}, холст ${width}×${height}`);
       let target=app.state.layers.find(layer=>layer.id===manifest.layer?.id)||app.state.layers.find(layer=>layer.slot===manifest.slot)||app.layers.active();
       if(!target)throw new Error('слой для элемента не найден');if(!app.layers.canEdit(target))return false;
-      app.history.push();const ctx=target.canvas.getContext('2d');ctx.clearRect(0,0,width,height);ctx.imageSmoothingEnabled=false;ctx.drawImage(image,0,0);target.itemMeta=manifest;
+      app.history.pushLayer(target);const ctx=target.canvas.getContext('2d');ctx.clearRect(0,0,width,height);ctx.imageSmoothingEnabled=false;ctx.drawImage(image,0,0);target.itemMeta=manifest;
       app.layers.setActive(app.state.layers.indexOf(target));app.emit('layers:changed');app.emit('composite:dirty');app.loupe?.draw();app.mobileLayout?.closeSheet?.();
       app.emit('status',`.glitem загружен · ${manifest.name||manifest.id} → ${app.layers.pathLabel(target)}`);return true;
     }

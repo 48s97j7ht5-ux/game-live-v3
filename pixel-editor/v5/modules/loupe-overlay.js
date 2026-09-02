@@ -1,4 +1,4 @@
-import{W,H}from'../core/app.js';
+import{W,H}from'#pixel-app';
 export default{ id:'loupe-overlay',mount(app){
   const canvas=document.getElementById('overlay'),ctx=canvas.getContext('2d'),sizeSel=document.getElementById('loupeSize');
   canvas.width=W;canvas.height=H;

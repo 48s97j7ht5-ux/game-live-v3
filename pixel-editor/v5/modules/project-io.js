@@ -1,4 +1,4 @@
-import{W,H,makeLayer}from'../core/app.js?v=20260902-layer-schema1';
+import{W,H,makeLayer}from'#pixel-app';
 
 const FORMAT='pixel-lab-project';
 const VERSION=1;

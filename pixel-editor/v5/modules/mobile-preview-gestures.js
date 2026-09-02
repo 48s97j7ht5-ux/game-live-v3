@@ -1,4 +1,4 @@
-import{W,H}from'../core/app.js';
+import{W,H}from'#pixel-app';
 export default{
   id:'mobile-preview-gestures',
   mount(app){

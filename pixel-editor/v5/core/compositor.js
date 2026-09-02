@@ -1,4 +1,4 @@
-import{W,H}from'./app.js?v=20260902-layer-schema1';
+import{W,H}from'#pixel-app';
 export function installCompositor(app){
   const paint=document.getElementById('paint'),pc=paint.getContext('2d',{willReadFrequently:true});paint.width=W;paint.height=H;pc.imageSmoothingEnabled=false;
   function drawLayer(layer,alpha=1){if(!app.layers?.isVisible(layer))return;pc.save();pc.globalAlpha=app.layers.effectiveOpacity(layer)*alpha;pc.drawImage(layer.canvas,0,0);pc.restore()}
