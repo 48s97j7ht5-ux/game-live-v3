@@ -9,6 +9,10 @@ export default{
         <button data-files="project-open">📂 Продолжить проект</button>
         <button data-files="project-save">💾 Сохранить проект</button>
       </div>
+      <div class="mobileFilesSection"><div class="mobileFilesTitle">Игровой элемент</div>
+        <button data-files="item-open">📦 Загрузить .glitem</button>
+        <button data-files="item-save">💾 Сохранить слой как .glitem</button>
+      </div>
       <div class="mobileFilesSection"><div class="mobileFilesTitle">Открыть изображение</div>
         <button data-files="sprite">🖼️ Открыть composite</button>
         <button data-files="ref">🧷 Открыть подложку</button>
@@ -25,6 +29,8 @@ export default{
     const click=id=>document.getElementById(id)?.click();
     panel.querySelector('[data-files="project-open"]').onclick=()=>app.projectIO?.openPicker();
     panel.querySelector('[data-files="project-save"]').onclick=()=>app.projectIO?.save();
+    panel.querySelector('[data-files="item-open"]').onclick=()=>app.glItemIO?.openPicker();
+    panel.querySelector('[data-files="item-save"]').onclick=()=>app.glItemIO?.save().catch(error=>app.emit('status','Ошибка .glitem: '+error.message));
     panel.querySelector('[data-files="sprite"]').onclick=()=>click('spriteFile');
     panel.querySelector('[data-files="ref"]').onclick=()=>click('refFile');
     panel.querySelector('[data-files="kat"]').onclick=()=>click('loadKat');
