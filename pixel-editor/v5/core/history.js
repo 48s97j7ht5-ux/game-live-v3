@@ -17,6 +17,7 @@ export function installHistory(app){
       app.state.layers=source.layers.map(x=>{const l=makeLayer(x.name,{id:x.id,parentId:x.parentId,visible:x.visible,locked:x.locked,opacity:x.opacity});l.canvas.getContext('2d').putImageData(x.data,0,0);return l});
       const restored=source.activeId?app.state.layers.findIndex(l=>l.id===source.activeId):-1;
       app.state.activeLayer=restored>=0?restored:Math.min(app.state.activeLayer,app.state.layers.length-1);
+      app.layers?.validateStructure?.({repair:true,notify:true});
       app.emit('layers:changed');app.emit('composite:dirty');
     }
   };

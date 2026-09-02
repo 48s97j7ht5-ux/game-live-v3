@@ -42,6 +42,9 @@ const DEFAULT_LAYERS=[
 ];
 
 const makeGroup=g=>({id:g.id,name:g.name,parentId:g.parentId,visible:true,locked:false,opacity:1,expanded:g.expanded!==false});
+const groupId=(value,index)=>typeof value==='string'&&value.trim()?value.trim():'group_'+(index+1);
+const layerId=(value,index)=>typeof value==='string'&&value.trim()?value.trim():'layer_'+(index+1);
+const drawable=layer=>!!layer?.canvas&&typeof layer.canvas.getContext==='function';
 
 export function installLayers(app){
   const api={
@@ -49,11 +52,69 @@ export function installLayers(app){
       app.state.layerGroups=GROUPS.map(makeGroup);
       app.state.layers=DEFAULT_LAYERS.map(([name,parentId])=>makeLayer(name,{id:name,parentId}));
       app.state.activeLayer=Math.max(0,app.state.layers.findIndex(l=>l.name==='body_torso'));
+      app.state.layerValidation=this.validateStructure({repair:true,notify:false});
       app.emit('layers:changed');
     },
-    active(){return app.state.layers[app.state.activeLayer]},
+    active(){
+      const layers=Array.isArray(app.state.layers)?app.state.layers:[];
+      if(!drawable(layers[app.state.activeLayer]))app.state.activeLayer=Math.max(0,layers.findIndex(drawable));
+      return layers[app.state.activeLayer];
+    },
     group(id){return app.state.layerGroups.find(g=>g.id===id)},
-    ancestors(parentId){const out=[];let current=this.group(parentId);while(current){out.push(current);current=this.group(current.parentId)}return out},
+    ancestors(parentId){const out=[],visited=new Set();let current=this.group(parentId);while(current&&!visited.has(current.id)){visited.add(current.id);out.push(current);current=this.group(current.parentId)}return out},
+    validateStructure({repair=true,notify=true}={}){
+      const issues=[];
+      if(!Array.isArray(app.state.layerGroups)){issues.push('список групп отсутствовал');if(repair)app.state.layerGroups=[]}
+      if(!Array.isArray(app.state.layers)){issues.push('список слоёв отсутствовал');if(repair)app.state.layers=[]}
+      const groups=Array.isArray(app.state.layerGroups)?app.state.layerGroups:[];
+      const usedGroups=new Set();
+      groups.forEach((group,index)=>{if(!group||typeof group!=='object'){issues.push('восстановлена повреждённая группа '+(index+1));if(repair)groups[index]=makeGroup({id:'group_'+(index+1),name:'Группа '+(index+1),parentId:null,expanded:true})}});
+      groups.forEach((group,index)=>{
+        if(!group||typeof group!=='object')return;
+        const wanted=groupId(group?.id,index);let id=wanted,suffix=2;
+        while(usedGroups.has(id))id=wanted+'_'+suffix++;
+        if(id!==group?.id){issues.push('исправлен ID группы '+(group?.name||index+1));if(repair)group.id=id}
+        usedGroups.add(repair?id:group?.id);
+      });
+      const knownGroups=new Set(groups.filter(group=>group&&typeof group==='object').map(group=>group.id));
+      groups.forEach(group=>{
+        if(!group||typeof group!=='object')return;
+        if(group.parentId===group.id||group.parentId!=null&&!knownGroups.has(group.parentId)){
+          issues.push('исправлен родитель группы '+(group.name||group.id));if(repair)group.parentId=null;
+        }
+      });
+      groups.forEach(group=>{
+        if(!group||typeof group!=='object')return;
+        const visited=new Set([group.id]);let current=group;
+        while(current?.parentId!=null){
+          if(visited.has(current.parentId)){issues.push('разорван цикл у группы '+(group.name||group.id));if(repair)group.parentId=null;break}
+          visited.add(current.parentId);current=groups.find(item=>item.id===current.parentId);
+        }
+      });
+      let fallback=groups.find(group=>group?.id==='body')||groups.find(group=>group?.id==='imports')||groups.find(group=>group&&typeof group==='object');
+      if(!fallback&&repair){fallback=makeGroup({id:'drawing',name:'Рисунок',parentId:null,expanded:true});groups.push(fallback);knownGroups.add(fallback.id);issues.push('создана корневая группа для рисования')}
+      const layers=Array.isArray(app.state.layers)?app.state.layers:[];
+      const usedLayers=new Set();
+      layers.forEach((layer,index)=>{if(!layer||typeof layer!=='object'){issues.push('восстановлен повреждённый слой '+(index+1));if(repair)layers[index]=makeLayer('Слой '+(index+1),{id:'layer_'+(index+1),parentId:fallback?.id||null})}});
+      layers.forEach((layer,index)=>{
+        if(!layer||typeof layer!=='object')return;
+        const wanted=layerId(layer?.id,index);let id=wanted,suffix=2;
+        while(usedLayers.has(id))id=wanted+'_'+suffix++;
+        if(id!==layer?.id){issues.push('исправлен ID слоя '+(layer?.name||index+1));if(repair)layer.id=id}
+        usedLayers.add(repair?id:layer?.id);
+        if(!knownGroups.has(layer?.parentId)){issues.push('слой '+(layer?.name||id)+' перенесён в доступную группу');if(repair)layer.parentId=fallback?.id||null}
+        if(!drawable(layer)){issues.push('восстановлен холст слоя '+(layer?.name||id));if(repair)layer.canvas=makeLayer('recovered').canvas}
+      });
+      if(!layers.length&&repair){layers.push(makeLayer('drawing_layer',{id:'drawing_layer',parentId:fallback?.id||null}));issues.push('создан первый рисуемый слой')}
+      if(!Number.isInteger(app.state.activeLayer)||!drawable(layers[app.state.activeLayer])){
+        issues.push('восстановлен активный рисуемый слой');
+        if(repair)app.state.activeLayer=Math.max(0,layers.findIndex(drawable));
+      }
+      const report={ok:issues.length===0,repaired:repair&&issues.length>0,issues};
+      app.state.layerValidation=report;
+      if(report.repaired){console.warn('Layer structure repaired:',issues);if(notify)app.emit('status','Структура слоёв исправлена: '+issues.join('; '))}
+      return report;
+    },
     isVisible(layer){return !!layer&&layer.visible!==false&&this.ancestors(layer.parentId).every(g=>g.visible!==false)},
     isLocked(layer){return !layer||layer.locked===true||this.ancestors(layer.parentId).some(g=>g.locked===true)},
     canEdit(layer=this.active(),notify=true){
@@ -67,6 +128,7 @@ export function installLayers(app){
     effectiveOpacity(layer){return Math.max(0,Math.min(1,(layer?.opacity??1)*this.ancestors(layer?.parentId).reduce((value,g)=>value*(g.opacity??1),1)))},
     pathLabel(layer){const groups=this.ancestors(layer?.parentId).reverse().filter(g=>g.id!=='character');const leaf=app.layerLabels?.get(layer?.name)||layer?.name||'Слой';return[...groups.map(g=>g.name),leaf].join(' › ')},
     add(name='layer_'+(app.state.layers.length+1),parentId=this.active()?.parentId||'body'){
+      if(!this.group(parentId))parentId=this.group('body')?.id||app.state.layerGroups[0]?.id||null;
       const layer=makeLayer(name,{parentId});
       const at=this.active()?app.state.activeLayer+1:app.state.layers.length;
       app.state.layers.splice(at,0,layer);app.state.activeLayer=at;
@@ -83,6 +145,7 @@ export function installLayers(app){
       const src=this.active();if(!src)return;
       if(app.state.layers.filter(l=>l.parentId===src.parentId).length<=1){app.emit('status','В группе должен остаться хотя бы один слой');return}
       app.state.layers.splice(app.state.activeLayer,1);app.state.activeLayer=Math.max(0,app.state.activeLayer-1);
+      this.validateStructure({repair:true,notify:true});
       app.emit('layers:changed');app.emit('composite:dirty');
     },
     mergeDown(){
@@ -91,11 +154,13 @@ export function installLayers(app){
       if(top.parentId!==down.parentId){app.emit('status','Объединять можно только соседние слои одной группы');return}
       const ctx=down.canvas.getContext('2d');ctx.save();ctx.globalAlpha=top.opacity;ctx.drawImage(top.canvas,0,0);ctx.restore();
       app.state.layers.splice(i,1);app.state.activeLayer--;
+      this.validateStructure({repair:true,notify:true});
       app.emit('layers:changed');app.emit('composite:dirty');
     },
     setActive(i){const next=Math.max(0,Math.min(app.state.layers.length-1,i));if(next===app.state.activeLayer){app.emit('layers:active',next);return}app.state.activeLayer=next;app.emit('layers:active',next);app.emit('composite:dirty')},
     importCanvas(canvas,name='composite_import'){
-      const layer=makeLayer(name,{parentId:'imports'});layer.canvas.getContext('2d').drawImage(canvas,0,0,W,H);
+      const parentId=this.group('imports')?.id||this.group('body')?.id||app.state.layerGroups[0]?.id||null;
+      const layer=makeLayer(name,{parentId});layer.canvas.getContext('2d').drawImage(canvas,0,0,W,H);
       app.state.layers.push(layer);app.state.activeLayer=app.state.layers.length-1;
       app.emit('layers:changed');app.emit('composite:dirty');
     }
