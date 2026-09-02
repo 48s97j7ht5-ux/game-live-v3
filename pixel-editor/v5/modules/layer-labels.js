@@ -29,7 +29,6 @@ const RU={
   handwear_base:'Перчатки',
   wrist_accessories_base:'Часы / браслет',
   accessories_front:'Прочее',
-  kat_v1_1_composite:'Кэт V1.1',
   composite_import:'Импорт'
 };
 export default{

@@ -26,7 +26,6 @@ export default{
       <div class="mobileFilesSection"><div class="mobileFilesTitle">Открыть изображение</div>
         <button data-files="sprite">🖼️ Открыть composite</button>
         <button data-files="ref">🧷 Открыть подложку</button>
-        <button data-files="kat">👤 Загрузить Kat V1.1</button>
       </div>
       <div class="mobileFilesSection"><div class="mobileFilesTitle">Экспорт PNG</div>
         <button data-files="export">💾 Сохранить composite</button>
@@ -50,7 +49,6 @@ export default{
     panel.querySelector('[data-files="github-disconnect"]').onclick=()=>app.githubStorage?.disconnect();
     panel.querySelector('[data-files="sprite"]').onclick=()=>click('spriteFile');
     panel.querySelector('[data-files="ref"]').onclick=()=>click('refFile');
-    panel.querySelector('[data-files="kat"]').onclick=()=>click('loadKat');
     panel.querySelector('[data-files="export"]').onclick=()=>click('export');
     panel.querySelector('[data-files="export-layer"]').onclick=()=>click('exportLayer');
     panel.querySelector('[data-files="undo"]').onclick=()=>app.history?.undo();
