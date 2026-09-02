@@ -1,4 +1,4 @@
-import{W,H}from'../core/app.js?v=20260902-layer-tree1';
+import{W,H}from'../core/app.js?v=20260902-layer-schema1';
 
 function safeName(value){return String(value||'layer').replace(/[^a-z0-9._-]+/gi,'_').replace(/^_+|_+$/g,'')||'layer'}
 

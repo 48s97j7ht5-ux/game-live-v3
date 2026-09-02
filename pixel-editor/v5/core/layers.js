@@ -1,4 +1,4 @@
-import{makeLayer,W,H}from'./app.js?v=20260902-layer-tree1';
+import{makeLayer,W,H}from'./app.js?v=20260902-layer-schema1';
 
 const GROUPS=[
   {id:'character',name:'Персонаж',parentId:null,expanded:true},
@@ -11,34 +11,54 @@ const GROUPS=[
   {id:'legs',name:'Ноги',parentId:'body',expanded:false},
   {id:'clothes',name:'Одежда',parentId:'character',expanded:true},
   {id:'underwear',name:'Нижнее бельё',parentId:'clothes',expanded:false},
-  {id:'clothes_upper',name:'Верхняя',parentId:'clothes',expanded:false},
-  {id:'clothes_lower',name:'Нижняя',parentId:'clothes',expanded:false},
-  {id:'clothes_onepiece',name:'Цельная',parentId:'clothes',expanded:false},
-  {id:'clothes_outerwear',name:'Уличная верхняя',parentId:'clothes',expanded:false},
+  {id:'hosiery',name:'Чулочно-носочное',parentId:'clothes',expanded:false},
+  {id:'clothes_underlayer',name:'Нательная одежда',parentId:'clothes',expanded:false},
+  {id:'clothes_main',name:'Основная одежда',parentId:'clothes',expanded:true},
+  {id:'clothes_upper',name:'Верх',parentId:'clothes_main',expanded:false},
+  {id:'clothes_lower',name:'Низ',parentId:'clothes_main',expanded:false},
+  {id:'clothes_onepiece',name:'Цельная вещь',parentId:'clothes_main',expanded:false},
+  {id:'clothes_midlayer',name:'Дополнительная одежда',parentId:'clothes',expanded:false},
+  {id:'clothes_outerwear',name:'Верхняя одежда',parentId:'clothes',expanded:false},
   {id:'footwear',name:'Обувь',parentId:'clothes',expanded:false},
   {id:'accessories',name:'Аксессуары',parentId:'character',expanded:false},
+  {id:'accessories_head',name:'Голова',parentId:'accessories',expanded:false},
+  {id:'accessories_face',name:'Лицо',parentId:'accessories',expanded:false},
+  {id:'accessories_neck',name:'Шея',parentId:'accessories',expanded:false},
+  {id:'accessories_hands',name:'Руки',parentId:'accessories',expanded:false},
   {id:'imports',name:'Импорт',parentId:null,expanded:true}
 ];
 
-// Render order stays flat and independent from the semantic tree.
+// Folder placement is only navigation. z is the independent render order.
 const DEFAULT_LAYERS=[
-  ['hair_back','hair'],
-  ['body_legs','legs'],
-  ['body_torso','torso'],
-  ['body_arms','arms'],
-  ['head_base','head'],
-  ['face_eyes','face'],
-  ['face_brows','face'],
-  ['face_nose','face'],
-  ['face_mouth','face'],
-  ['underwear_base','underwear'],
-  ['clothes_lower_base','clothes_lower'],
-  ['clothes_upper_base','clothes_upper'],
-  ['clothes_onepiece_base','clothes_onepiece'],
-  ['clothes_outerwear_base','clothes_outerwear'],
-  ['footwear_base','footwear'],
-  ['hair_front','hair'],
-  ['accessories_base','accessories']
+  {id:'hair_back',parentId:'hair',slot:'hair_back',z:0},
+  {id:'body_legs',parentId:'legs',slot:'body_legs',z:100},
+  {id:'body_arms',parentId:'arms',slot:'body_arms',z:110},
+  {id:'body_torso',parentId:'torso',slot:'body_torso',z:120},
+  {id:'head_base',parentId:'head',slot:'head_base',z:130},
+  {id:'body_details',parentId:'body',slot:'body_details',z:200},
+  {id:'face_eyes',parentId:'face',slot:'face_eyes',z:300},
+  {id:'face_brows',parentId:'face',slot:'face_brows',z:310},
+  {id:'face_nose',parentId:'face',slot:'face_nose',z:320},
+  {id:'face_mouth',parentId:'face',slot:'face_mouth',z:330},
+  {id:'underwear_top',parentId:'underwear',slot:'bra',z:400},
+  {id:'underwear_bottom',parentId:'underwear',slot:'underwear',z:410},
+  {id:'hosiery_base',parentId:'hosiery',slot:'hosiery',z:500},
+  {id:'socks_base',parentId:'hosiery',slot:'socks',z:510},
+  {id:'undershirt_base',parentId:'clothes_underlayer',slot:'undershirt',z:600},
+  {id:'clothes_lower_base',parentId:'clothes_lower',slot:'bottom',z:700},
+  {id:'clothes_onepiece_base',parentId:'clothes_onepiece',slot:'onepiece',z:710},
+  {id:'clothes_upper_base',parentId:'clothes_upper',slot:'top',z:720},
+  {id:'clothes_midlayer_base',parentId:'clothes_midlayer',slot:'midlayer',z:800},
+  {id:'clothes_outerwear_base',parentId:'clothes_outerwear',slot:'outerwear',z:900},
+  {id:'footwear_base',parentId:'footwear',slot:'shoes',z:950},
+  {id:'hair_front',parentId:'hair',slot:'hair_front',z:1000},
+  {id:'headwear_base',parentId:'accessories_head',slot:'head',z:1100},
+  {id:'eyewear_base',parentId:'accessories_face',slot:'eyes',z:1110},
+  {id:'ear_accessories_base',parentId:'accessories_face',slot:'ears',z:1120},
+  {id:'neck_accessories_base',parentId:'accessories_neck',slot:'neck',z:1130},
+  {id:'handwear_base',parentId:'accessories_hands',slot:'hands',z:1140},
+  {id:'wrist_accessories_base',parentId:'accessories_hands',slot:'wrist',z:1150},
+  {id:'accessories_front',parentId:'accessories',slot:'accessory_front',z:1200}
 ];
 
 const makeGroup=g=>({id:g.id,name:g.name,parentId:g.parentId,visible:true,locked:false,opacity:1,expanded:g.expanded!==false});
@@ -50,7 +70,7 @@ export function installLayers(app){
   const api={
     init(){
       app.state.layerGroups=GROUPS.map(makeGroup);
-      app.state.layers=DEFAULT_LAYERS.map(([name,parentId])=>makeLayer(name,{id:name,parentId}));
+      app.state.layers=DEFAULT_LAYERS.map(layer=>makeLayer(layer.id,layer));
       app.state.activeLayer=Math.max(0,app.state.layers.findIndex(l=>l.name==='body_torso'));
       app.state.layerValidation=this.validateStructure({repair:true,notify:false});
       app.emit('layers:changed');
@@ -126,17 +146,18 @@ export function installLayers(app){
       return !message;
     },
     effectiveOpacity(layer){return Math.max(0,Math.min(1,(layer?.opacity??1)*this.ancestors(layer?.parentId).reduce((value,g)=>value*(g.opacity??1),1)))},
+    renderLayers(){return app.state.layers.map((layer,index)=>({layer,index})).sort((a,b)=>(a.layer.z??a.index*10)-(b.layer.z??b.index*10)||a.index-b.index).map(item=>item.layer)},
     pathLabel(layer){const groups=this.ancestors(layer?.parentId).reverse().filter(g=>g.id!=='character');const leaf=app.layerLabels?.get(layer?.name)||layer?.name||'Слой';return[...groups.map(g=>g.name),leaf].join(' › ')},
     add(name='layer_'+(app.state.layers.length+1),parentId=this.active()?.parentId||'body'){
       if(!this.group(parentId))parentId=this.group('body')?.id||app.state.layerGroups[0]?.id||null;
-      const layer=makeLayer(name,{parentId});
+      const layer=makeLayer(name,{parentId,z:(this.active()?.z??app.state.layers.length*10)+1});
       const at=this.active()?app.state.activeLayer+1:app.state.layers.length;
       app.state.layers.splice(at,0,layer);app.state.activeLayer=at;
       app.emit('layers:changed');app.emit('composite:dirty');
     },
     duplicate(){
       const src=this.active();if(!src)return;
-      const layer=makeLayer(src.name+'_copy',{parentId:src.parentId,visible:src.visible,locked:src.locked,opacity:src.opacity});
+      const layer=makeLayer(src.name+'_copy',{parentId:src.parentId,slot:src.slot,z:(src.z??app.state.activeLayer*10)+.1,visible:src.visible,locked:src.locked,opacity:src.opacity});
       layer.canvas.getContext('2d').drawImage(src.canvas,0,0);
       app.state.layers.splice(app.state.activeLayer+1,0,layer);app.state.activeLayer++;
       app.emit('layers:changed');app.emit('composite:dirty');
@@ -160,7 +181,8 @@ export function installLayers(app){
     setActive(i){const next=Math.max(0,Math.min(app.state.layers.length-1,i));if(next===app.state.activeLayer){app.emit('layers:active',next);return}app.state.activeLayer=next;app.emit('layers:active',next);app.emit('composite:dirty')},
     importCanvas(canvas,name='composite_import'){
       const parentId=this.group('imports')?.id||this.group('body')?.id||app.state.layerGroups[0]?.id||null;
-      const layer=makeLayer(name,{parentId});layer.canvas.getContext('2d').drawImage(canvas,0,0,W,H);
+      const maxZ=Math.max(0,...app.state.layers.map(layer=>Number.isFinite(layer.z)?layer.z:0));
+      const layer=makeLayer(name,{parentId,slot:'import',z:maxZ+10});layer.canvas.getContext('2d').drawImage(canvas,0,0,W,H);
       app.state.layers.push(layer);app.state.activeLayer=app.state.layers.length-1;
       app.emit('layers:changed');app.emit('composite:dirty');
     }

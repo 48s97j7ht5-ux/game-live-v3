@@ -35,9 +35,9 @@ export default{ id:'layers-panel',mount(app){
     box.innerHTML='';
     app.state.layerGroups.filter(group=>group.parentId===null).forEach(group=>renderGroup(group,0));
   }
-  buttons.add.onclick=()=>{app.history.push();app.layers.add();render()};
-  buttons.duplicate.onclick=()=>{app.history.push();app.layers.duplicate();render()};
-  buttons.remove.onclick=()=>{app.history.push();app.layers.remove();render()};
-  buttons.merge.onclick=()=>{app.history.push();app.layers.mergeDown();render()};
+  if(buttons.add)buttons.add.onclick=()=>{app.history.push();app.layers.add();render()};
+  if(buttons.duplicate)buttons.duplicate.onclick=()=>{app.history.push();app.layers.duplicate();render()};
+  if(buttons.remove)buttons.remove.onclick=()=>{app.history.push();app.layers.remove();render()};
+  if(buttons.merge)buttons.merge.onclick=()=>{app.history.push();app.layers.mergeDown();render()};
   app.on('layers:changed',render);app.on('layers:active',render);render();
 }};

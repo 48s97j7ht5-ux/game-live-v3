@@ -1,4 +1,4 @@
-import{W,H,makeLayer}from'../core/app.js?v=20260902-layer-tree1';
+import{W,H,makeLayer}from'../core/app.js?v=20260902-layer-schema1';
 
 const FORMAT='pixel-lab-project';
 const VERSION=1;
@@ -23,9 +23,9 @@ function decodeImage(source){
   });
 }
 
-async function restoreLayer(record){
+async function restoreLayer(record,index){
   const image=await decodeImage(record?.png);
-  const layer=makeLayer(record?.name||'Слой',{id:record?.id,parentId:record?.parentId,visible:record?.visible!==false,locked:record?.locked===true,opacity:Number.isFinite(record?.opacity)?clamp(record.opacity,0,1):1});
+  const layer=makeLayer(record?.name||'Слой',{id:record?.id,parentId:record?.parentId,slot:record?.slot||record?.id,z:Number.isFinite(record?.z)?record.z:index*10,visible:record?.visible!==false,locked:record?.locked===true,opacity:Number.isFinite(record?.opacity)?clamp(record.opacity,0,1):1});
   const ctx=layer.canvas.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,W,H);ctx.drawImage(image,0,0,W,H);
   return layer;
 }
@@ -66,7 +66,7 @@ export default{
           background:app.backgroundToggle?.mode||'magenta'
         },
         groups:(app.state.layerGroups||[]).map(group=>({id:group.id,name:group.name,parentId:group.parentId,visible:group.visible!==false,locked:group.locked===true,opacity:group.opacity??1,expanded:group.expanded!==false})),
-        layers:(app.state.layers||[]).map(layer=>({id:layer.id,parentId:layer.parentId,name:layer.name,visible:layer.visible!==false,locked:layer.locked===true,opacity:layer.opacity??1,png:layer.canvas.toDataURL('image/png')})),
+        layers:(app.state.layers||[]).map(layer=>({id:layer.id,parentId:layer.parentId,name:layer.name,slot:layer.slot||layer.id,z:layer.z,visible:layer.visible!==false,locked:layer.locked===true,opacity:layer.opacity??1,png:layer.canvas.toDataURL('image/png')})),
         reference
       };
     }
@@ -80,7 +80,7 @@ export default{
 
     async function loadProject(project){
       validate(project);
-      const restoredLayers=await Promise.all(project.layers.map(restoreLayer));
+      const restoredLayers=await Promise.all(project.layers.map((record,index)=>restoreLayer(record,index)));
       const referenceImage=project.reference?.png?await decodeImage(project.reference.png):null;
       app.state.layerGroups=project.groups.map(group=>({id:group.id,name:group.name||'Группа',parentId:group.parentId??null,visible:group.visible!==false,locked:group.locked===true,opacity:Number.isFinite(group.opacity)?clamp(group.opacity,0,1):1,expanded:group.expanded!==false}));
       app.state.layers=restoredLayers;

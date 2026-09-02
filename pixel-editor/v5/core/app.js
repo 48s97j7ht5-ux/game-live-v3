@@ -10,4 +10,4 @@ export class PixelLabApp{
   activeTool(){return this.tools.get(this.state.activeTool)}
 }
 export const createCanvas=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;return c};
-export const makeLayer=(name,options={})=>({id:options.id||'layer_'+Date.now().toString(36)+'_'+(++layerSequence),parentId:options.parentId||'body',name,visible:options.visible!==false,locked:options.locked===true,opacity:options.opacity??1,canvas:createCanvas()});
+export const makeLayer=(name,options={})=>({id:options.id||'layer_'+Date.now().toString(36)+'_'+(++layerSequence),parentId:options.parentId||'body',name,slot:options.slot||options.id||name,z:Number.isFinite(options.z)?options.z:0,visible:options.visible!==false,locked:options.locked===true,opacity:options.opacity??1,canvas:createCanvas()});
