@@ -39,6 +39,9 @@ export default{
 
     function refreshViews(){app.backgroundToggle?.renderMask?.();app.loupe?.draw();app.emit('reference:magic',{enabled})}
     function capture(){original=ctx.getImageData(0,0,ref.width,ref.height)}
+    function sourceCanvas(){const canvas=document.createElement('canvas');canvas.width=ref.width;canvas.height=ref.height;const source=canvas.getContext('2d');if(original)source.putImageData(original,0,0);else source.drawImage(ref,0,0);return canvas}
+    function loadSource(source,nextEnabled=false){ctx.clearRect(0,0,ref.width,ref.height);ctx.imageSmoothingEnabled=false;ctx.drawImage(source,0,0,ref.width,ref.height);capture();enabled=!!nextEnabled;if(enabled)applyMagic();else refreshViews()}
+    function clearSource(){original=null;enabled=false;ctx.clearRect(0,0,ref.width,ref.height);refreshViews()}
 
     function analyze(data){
       const count=data.length/4,L=new Float32Array(count),A=new Float32Array(count),B=new Float32Array(count),C=new Float32Array(count),H=new Float32Array(count),alpha=new Uint8Array(count),cache=new Map();
@@ -107,6 +110,6 @@ export default{
     function setEnabled(next){enabled=!!next;if(enabled)applyMagic();else restore()}
     function toggle(){setEnabled(!enabled)}
     app.on('reference:changed',()=>{capture();if(enabled)applyMagic();else refreshViews()});
-    app.referenceMagic={get enabled(){return enabled},toggle,setEnabled,apply:applyMagic,restore};
+    app.referenceMagic={get enabled(){return enabled},toggle,setEnabled,apply:applyMagic,restore,sourceCanvas,loadSource,clearSource};
   }
 };
