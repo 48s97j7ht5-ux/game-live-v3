@@ -149,16 +149,23 @@ export function installLayers(app){
     effectiveOpacity(layer){return Math.max(0,Math.min(1,(layer?.opacity??1)*this.ancestors(layer?.parentId).reduce((value,g)=>value*(g.opacity??1),1)))},
     renderLayers(){return app.state.layers.map((layer,index)=>({layer,index})).sort((a,b)=>(a.layer.z??a.index*10)-(b.layer.z??b.index*10)||a.index-b.index).map(item=>item.layer)},
     pathLabel(layer){const groups=this.ancestors(layer?.parentId).reverse().filter(g=>g.id!=='character');const leaf=app.layerLabels?.get(layer?.name)||layer?.name||'Слой';return[...groups.map(g=>g.name),leaf].join(' › ')},
+    zAbove(layer){
+      const value=Number.isFinite(layer?.z)?layer.z:Math.max(0,app.state.layers.indexOf(layer)*10);
+      if(layer&&!Number.isFinite(layer.z))layer.z=value;
+      const candidate=Math.floor(value)+1,higher=app.state.layers.filter(item=>item!==layer&&Number.isFinite(item.z)&&item.z>value);
+      if(higher.some(item=>item.z<=candidate))higher.forEach(item=>item.z+=1);
+      return candidate;
+    },
     add(name='layer_'+(app.state.layers.length+1),parentId=this.active()?.parentId||'body'){
       if(!this.group(parentId))parentId=this.group('body')?.id||app.state.layerGroups[0]?.id||null;
-      const layer=makeLayer(name,{parentId,z:(this.active()?.z??app.state.layers.length*10)+1});
-      const at=this.active()?app.state.activeLayer+1:app.state.layers.length;
+      const active=this.active(),layer=makeLayer(name,{parentId,z:active?this.zAbove(active):app.state.layers.length*10});
+      const at=active?app.state.activeLayer+1:app.state.layers.length;
       app.state.layers.splice(at,0,layer);app.state.activeLayer=at;
       app.emit('layers:changed');app.emit('composite:dirty');
     },
     duplicate(){
       const src=this.active();if(!src)return;
-      const layer=makeLayer(src.name+'_copy',{parentId:src.parentId,slot:src.slot,z:(src.z??app.state.activeLayer*10)+.1,visible:src.visible,locked:src.locked,opacity:src.opacity});
+      const layer=makeLayer(src.name+'_copy',{parentId:src.parentId,slot:src.slot,z:this.zAbove(src),visible:src.visible,locked:src.locked,opacity:src.opacity});
       layer.canvas.getContext('2d').drawImage(src.canvas,0,0);
       app.state.layers.splice(app.state.activeLayer+1,0,layer);app.state.activeLayer++;
       app.emit('layers:changed');app.emit('composite:dirty');
@@ -171,11 +178,12 @@ export function installLayers(app){
       app.emit('layers:changed');app.emit('composite:dirty');
     },
     mergeDown(){
-      const i=app.state.activeLayer;if(i<=0)return;
-      const top=app.state.layers[i],down=app.state.layers[i-1];
-      if(top.parentId!==down.parentId){app.emit('status','Объединять можно только соседние слои одной группы');return}
-      const ctx=down.canvas.getContext('2d');ctx.save();ctx.globalAlpha=top.opacity;ctx.drawImage(top.canvas,0,0);ctx.restore();
-      app.state.layers.splice(i,1);app.state.activeLayer--;
+      const top=this.active();if(!top)return;
+      const siblings=app.state.layers.map((layer,index)=>({layer,index})).filter(item=>item.layer.parentId===top.parentId).sort((a,b)=>(a.layer.z??a.index*10)-(b.layer.z??b.index*10)||a.index-b.index);
+      const position=siblings.findIndex(item=>item.layer===top);
+      if(position<=0){app.emit('status','Под активным слоем нет слоя этой группы');return}
+      const down=siblings[position-1].layer,ctx=down.canvas.getContext('2d');ctx.save();ctx.globalAlpha=top.opacity;ctx.drawImage(top.canvas,0,0);ctx.restore();
+      app.state.layers.splice(app.state.layers.indexOf(top),1);app.state.activeLayer=app.state.layers.indexOf(down);
       this.validateStructure({repair:true,notify:true});
       app.emit('layers:changed');app.emit('composite:dirty');
     },

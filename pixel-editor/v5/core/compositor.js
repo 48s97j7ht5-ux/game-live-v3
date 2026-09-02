@@ -12,5 +12,10 @@ export function installCompositor(app){
     }else layers.forEach(layer=>drawLayer(layer,1));
     app.emit('composite:rendered');
   }};
-  app.on('composite:dirty',()=>app.compositor.render());app.on('layers:changed',()=>app.compositor.render());app.compositor.render();
+  let renderQueued=false;
+  function scheduleRender(){
+    if(renderQueued)return;renderQueued=true;
+    queueMicrotask(()=>{renderQueued=false;app.compositor.render()});
+  }
+  app.on('composite:dirty',scheduleRender);app.on('layers:changed',scheduleRender);app.compositor.render();
 }
