@@ -18,6 +18,7 @@ export default{
         <button data-files="github-help">1. Получить токен GitHub</button>
         <button data-files="github-make-key">2. Создать .gltoken</button>
         <button data-files="github-connect">🔑 Подключить .gltoken</button>
+        <button data-files="github-browser">📂 Проводник GitHub</button>
         <button data-files="github-save-project">☁️ Сохранить проект в GitHub</button>
         <button data-files="github-save-item">☁️ Сохранить активный .glitem в GitHub</button>
         <button data-files="github-disconnect">Отключить GitHub</button>
@@ -43,6 +44,7 @@ export default{
     panel.querySelector('[data-files="github-help"]').onclick=()=>app.githubStorage?.openTokenPage();
     panel.querySelector('[data-files="github-make-key"]').onclick=()=>app.githubStorage?.makeTokenFile().catch(error=>app.emit('status','Ошибка GitHub: '+error.message));
     panel.querySelector('[data-files="github-connect"]').onclick=()=>app.githubStorage?.openTokenPicker();
+    panel.querySelector('[data-files="github-browser"]').onclick=()=>app.githubBrowser?.open();
     panel.querySelector('[data-files="github-save-project"]').onclick=()=>app.githubStorage?.saveProject().catch(error=>app.emit('status','Ошибка GitHub: '+error.message));
     panel.querySelector('[data-files="github-save-item"]').onclick=()=>app.githubStorage?.saveItem().catch(error=>app.emit('status','Ошибка GitHub: '+error.message));
     panel.querySelector('[data-files="github-disconnect"]').onclick=()=>app.githubStorage?.disconnect();

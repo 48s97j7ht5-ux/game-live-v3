@@ -6,6 +6,9 @@ const TOKEN_VERSION=1;
 const TOKEN_URL='https://github.com/settings/personal-access-tokens/new?name=Game%20Live%20Editor&description=Save%20Game%20Live%20assets%20from%20the%20mobile%20editor&target_name=48s97j7ht5-ux&expires_in=90&contents=write';
 
 const safePart=value=>String(value||'item').trim().replace(/[^a-z0-9._-]+/gi,'-').replace(/^-+|-+$/g,'')||'item';
+const cleanPath=value=>String(value||'').split('/').map(part=>part.trim()).filter(part=>part&&part!=='.'&&part!=='..').join('/');
+const apiPath=value=>cleanPath(value).split('/').map(encodeURIComponent).join('/');
+const joinPath=(directory,file)=>[cleanPath(directory),safePart(file)].filter(Boolean).join('/');
 const download=(blob,name)=>{const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 
 function bytesBase64(bytes){
@@ -13,15 +16,18 @@ function bytesBase64(bytes){
 }
 
 function githubError(status,message=''){
-  if(status===401)return new Error('GitHub не принял токен');
-  if(status===403)return new Error('токену не хватает разрешения Contents: Read and write');
-  if(status===404)return new Error('репозиторий не найден или токен не имеет к нему доступа');
-  return new Error(`GitHub ответил ${status}${message?' · '+message:''}`);
+  let error;
+  if(status===401)error=new Error('GitHub не принял токен');
+  else if(status===403)error=new Error('токену не хватает разрешения Contents: Read and write');
+  else if(status===404)error=new Error('файл или папка не найдены');
+  else error=new Error(`GitHub ответил ${status}${message?' · '+message:''}`);
+  error.status=status;return error;
 }
 
 export function tokenDocument(token){return{format:TOKEN_FORMAT,version:TOKEN_VERSION,repository:REPOSITORY,token}}
 export function itemPath(manifest){return`game-assets/items/${safePart(manifest?.slot)}/${safePart(manifest?.id)}.glitem`}
 export function projectPath(name){return`game-assets/projects/${safePart(name)}.glproject`}
+export function repoPath(value){return cleanPath(value)}
 
 export default{
   id:'github-storage',
@@ -45,7 +51,8 @@ export default{
     }
     async function validateToken(key){
       const repo=await api(`/repos/${REPOSITORY}`,{},key);
-      if(repo?.full_name?.toLowerCase()!==REPOSITORY.toLowerCase())throw new Error('токен подключён не к тому репозиторию');return true;
+      if(repo?.full_name?.toLowerCase()!==REPOSITORY.toLowerCase())throw new Error('токен подключён не к тому репозиторию');
+      if(repo?.permissions?.push!==true)throw new Error('у токена нет права записи в game-live-v3');return true;
     }
     async function connectKey(key){
       const clean=String(key||'').trim();if(!clean.startsWith('github_pat_'))throw new Error('нужен Fine-grained token, начинающийся с github_pat_');
@@ -66,10 +73,44 @@ export default{
     function openTokenPicker(){if(input){input.value='';input.click()}}
     function openTokenPage(){window.open(TOKEN_URL,'_blank','noopener')}
     function disconnect(){token=null;setState(false);app.emit('status','GitHub отключён, ключ удалён из памяти')}
-    async function put(path,bytes,message){
-      let sha;try{sha=(await api(`/repos/${REPOSITORY}/contents/${path}?ref=${encodeURIComponent(BRANCH)}`))?.sha}catch(error){if(!/не найден/.test(error.message))throw error}
+    async function fileInfo(path){
+      try{return await api(`/repos/${REPOSITORY}/contents/${apiPath(path)}?ref=${encodeURIComponent(BRANCH)}`)}catch(error){if(error.status===404)return null;throw error}
+    }
+    async function put(path,bytes,message,{confirmOverwrite=false}={}){
+      path=cleanPath(path);if(!path)throw new Error('не указан путь файла');
+      const existing=await fileInfo(path),sha=existing?.sha;
+      if(existing?.type==='dir')throw new Error('по этому пути находится папка');
+      if(sha&&confirmOverwrite&&!confirm(`Файл ${path} уже существует. Обновить его?`))return null;
       const body={message,content:await bytesBase64(bytes),branch:BRANCH};if(sha)body.sha=sha;
-      return api(`/repos/${REPOSITORY}/contents/${path}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      return api(`/repos/${REPOSITORY}/contents/${apiPath(path)}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    async function listDirectory(path=''){
+      path=cleanPath(path);const result=await fileInfo(path);
+      if(result==null)return[];if(!Array.isArray(result))throw new Error('выбранный путь не является папкой');
+      return result.map(entry=>({name:entry.name,path:entry.path,type:entry.type,size:entry.size,sha:entry.sha})).sort((a,b)=>(a.type==='dir'?0:1)-(b.type==='dir'?0:1)||a.name.localeCompare(b.name,'ru'));
+    }
+    async function readFile(path){
+      if(!token)throw new Error('сначала подключите .gltoken');path=cleanPath(path);
+      const response=await fetch(`${API}/repos/${REPOSITORY}/contents/${apiPath(path)}?ref=${encodeURIComponent(BRANCH)}`,{headers:{Accept:'application/vnd.github.raw+json',Authorization:`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'}});
+      if(!response.ok){let body=null;try{body=await response.json()}catch{}throw githubError(response.status,body?.message)}return new Uint8Array(await response.arrayBuffer());
+    }
+    async function loadFromPath(path){
+      const name=cleanPath(path).split('/').pop()||'',lower=name.toLowerCase(),bytes=await readFile(path);
+      if(lower.endsWith('.glitem'))return app.glItemIO.loadFile(new File([bytes],name,{type:'application/zip'}));
+      if(lower.endsWith('.glproject')||lower.endsWith('.pixelproject'))return app.projectIO.loadFile(new File([bytes],name,{type:'application/json'}));
+      throw new Error('редактор открывает из GitHub только .glitem и .glproject');
+    }
+    async function saveItemTo(directory,fileName){
+      if(!token)throw new Error('сначала подключите .gltoken');const item=await app.glItemIO?.build();if(!item)return false;
+      const name=safePart(String(fileName||item.fileName).replace(/\.glitem$/i,''))+'.glitem',path=joinPath(directory,name);
+      const result=await put(path,item.bytes,`Save ${item.manifest.id} game item`,{confirmOverwrite:true});if(!result)return false;
+      app.emit('status',`GitHub сохранён · ${path}`);return path;
+    }
+    async function saveProjectTo(directory,fileName){
+      if(!token)throw new Error('сначала подключите .gltoken');const project=app.projectIO?.serialize();if(!project)throw new Error('проект пока не готов к сохранению');
+      const name=safePart(String(fileName||'kat-base').replace(/\.(glproject|pixelproject)$/i,''))+'.glproject',path=joinPath(directory,name),bytes=new TextEncoder().encode(JSON.stringify(project));
+      const result=await put(path,bytes,`Save ${name} editor project`,{confirmOverwrite:true});if(!result)return false;
+      projectName=name.replace(/\.glproject$/i,'');app.emit('status',`GitHub сохранён · ${path}`);return path;
     }
     async function saveItem(){
       if(!token)throw new Error('сначала подключите .gltoken');const item=await app.glItemIO?.build();if(!item)return false;
@@ -85,6 +126,6 @@ export default{
     if(connectButton)connectButton.onclick=openTokenPicker;
     if(projectButton)projectButton.onclick=safely(saveProject);
     if(itemButton)itemButton.onclick=safely(saveItem);
-    app.githubStorage={openTokenPage,makeTokenFile,openTokenPicker,loadTokenFile,disconnect,saveItem,saveProject,get connected(){return!!token},repository:REPOSITORY};setState(false);
+    app.githubStorage={openTokenPage,makeTokenFile,openTokenPicker,loadTokenFile,disconnect,saveItem,saveProject,listDirectory,readFile,loadFromPath,saveItemTo,saveProjectTo,repoPath:cleanPath,get connected(){return!!token},repository:REPOSITORY,branch:BRANCH};setState(false);
   }
 };
