@@ -56,6 +56,14 @@ export function installLayers(app){
     ancestors(parentId){const out=[];let current=this.group(parentId);while(current){out.push(current);current=this.group(current.parentId)}return out},
     isVisible(layer){return !!layer&&layer.visible!==false&&this.ancestors(layer.parentId).every(g=>g.visible!==false)},
     isLocked(layer){return !layer||layer.locked===true||this.ancestors(layer.parentId).some(g=>g.locked===true)},
+    canEdit(layer=this.active(),notify=true){
+      let message='';
+      if(!layer)message='Сначала выберите слой для рисования';
+      else if(this.isLocked(layer))message='Слой или его группа заблокированы';
+      else if(!this.isVisible(layer))message='Слой или его группа скрыты';
+      if(message&&notify)app.emit('status',message);
+      return !message;
+    },
     effectiveOpacity(layer){return Math.max(0,Math.min(1,(layer?.opacity??1)*this.ancestors(layer?.parentId).reduce((value,g)=>value*(g.opacity??1),1)))},
     pathLabel(layer){const groups=this.ancestors(layer?.parentId).reverse().filter(g=>g.id!=='character');const leaf=app.layerLabels?.get(layer?.name)||layer?.name||'Слой';return[...groups.map(g=>g.name),leaf].join(' › ')},
     add(name='layer_'+(app.state.layers.length+1),parentId=this.active()?.parentId||'body'){

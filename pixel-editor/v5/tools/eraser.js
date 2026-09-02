@@ -1,1 +1,1 @@
-export default{ id:'eraser',label:'⌫ Erase',apply(app,x,y){const layer=app.layers.active();if(!layer||app.layers.isLocked(layer))return;layer.canvas.getContext('2d').clearRect(x,y,1,1);app.emit('composite:dirty')} };
+export default{ id:'eraser',label:'⌫ Erase',apply(app,x,y){const layer=app.layers.active();if(!app.layers.canEdit(layer))return false;layer.canvas.getContext('2d').clearRect(x,y,1,1);app.emit('composite:dirty');return true} };

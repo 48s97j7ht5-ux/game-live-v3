@@ -44,7 +44,12 @@ export default{
       app.loupe?.draw();
       app.emit('loupe:moved',{x:app.state.cx,y:app.state.cy});
       const tool=app.activeTool();
-      if(tool?.id==='picker')tool.apply(app,app.state.cx,app.state.cy);
+      if(!tool||tool.id==='hand')return;
+      if(tool.id==='picker'){tool.apply(app,app.state.cx,app.state.cy);return}
+      const layer=app.layers?.active?.();
+      if(!app.layers?.canEdit?.(layer))return;
+      app.history?.push();
+      tool.apply(app,app.state.cx,app.state.cy);
     }
     function down(e){
       if(!isMobilePreview())return;
