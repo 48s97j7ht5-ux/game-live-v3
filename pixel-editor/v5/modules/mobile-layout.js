@@ -17,7 +17,7 @@ export default{
     body.append(top,quick,scrim,dock);
 
     let workspace='loupe',sheet=null,portal=null;
-    function activeName(){const raw=app.state.layers?.[app.state.activeLayer]?.name||'layer';return app.layerLabels?.get(raw)||raw}
+    function activeName(){const layer=app.layers?.active?.();return layer?app.layers.pathLabel(layer):'Слой'}
     function refreshTop(){top.querySelector('.mobileLayerName').textContent=activeName()}
     function markTools(){dock.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('activeBtn',b.dataset.tool===app.state.activeTool))}
     function refreshBg(){const b=top.querySelector('[data-mob="bg"]');if(!b)return;const magenta=app.backgroundToggle?.mode==='magenta';b.classList.toggle('activeBtn',magenta);b.textContent=magenta?'🟪':'⬛'}

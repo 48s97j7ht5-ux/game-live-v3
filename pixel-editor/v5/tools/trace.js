@@ -4,7 +4,7 @@ export default{
   apply(app,x,y){
     const layer=app.layers?.active?.();
     const ref=document.getElementById('ref');
-    if(!layer||layer.locked||!ref)return;
+    if(!layer||app.layers.isLocked(layer)||!ref)return;
     if(x<0||y<0||x>=ref.width||y>=ref.height)return;
     const rctx=ref.getContext('2d',{willReadFrequently:true});
     const px=rctx.getImageData(x,y,1,1).data;

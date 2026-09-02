@@ -1,1 +1,1 @@
-export default{ id:'pencil',label:'✏️ Pixel',apply(app,x,y){const l=app.layers.active();if(!l||l.locked)return;const c=l.canvas.getContext('2d');c.fillStyle=app.state.color;c.fillRect(x,y,1,1);app.emit('composite:dirty')} };
+export default{ id:'pencil',label:'✏️ Pixel',apply(app,x,y){const layer=app.layers.active();if(!layer||app.layers.isLocked(layer))return;const ctx=layer.canvas.getContext('2d');ctx.fillStyle=app.state.color;ctx.fillRect(x,y,1,1);app.emit('composite:dirty')} };
