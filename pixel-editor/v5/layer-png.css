@@ -1,0 +1,7 @@
+.layerLeaf{grid-template-columns:34px 34px minmax(50px,1fr) 34px 34px 62px}
+.layerPngButton{width:34px;height:34px;padding:3px;display:grid;place-items:center}
+@media(max-width:860px){
+  .pixelLabMobile .layerLeaf{grid-template-columns:32px 32px minmax(44px,1fr) 34px 34px 54px;gap:4px}
+  .pixelLabMobile .layerPngButton{width:34px;height:34px;padding:2px}
+  .pixelLabMobile .layerLeaf input[type=range]{width:54px;padding-left:3px;padding-right:3px}
+}

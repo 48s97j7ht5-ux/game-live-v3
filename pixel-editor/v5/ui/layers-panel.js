@@ -18,11 +18,13 @@ export default{ id:'layers-panel',mount(app){
     if(!app.layers.isVisible(layer))row.classList.add('layerInheritedHidden');
     if(app.layers.isLocked(layer)&&!layer.locked)row.classList.add('layerInheritedLocked');
     row.onclick=e=>{if(!['BUTTON','INPUT'].includes(e.target.tagName)){app.layers.setActive(i);render();app.emit('composite:dirty')}};
-    const vis=document.createElement('button');vis.textContent=layer.visible?'👁':'○';vis.onclick=e=>{e.stopPropagation();layer.visible=!layer.visible;render();app.emit('composite:dirty')};
-    const lock=document.createElement('button');lock.textContent=layer.locked?'🔒':'🔓';lock.onclick=e=>{e.stopPropagation();layer.locked=!layer.locked;render();app.emit('layers:changed')};
+    const vis=document.createElement('button');vis.textContent=layer.visible?'👁':'○';vis.title=layer.visible?'Скрыть слой':'Показать слой';vis.onclick=e=>{e.stopPropagation();layer.visible=!layer.visible;render();app.emit('composite:dirty')};
+    const lock=document.createElement('button');lock.textContent=layer.locked?'🔒':'🔓';lock.title=layer.locked?'Разблокировать слой':'Заблокировать слой';lock.onclick=e=>{e.stopPropagation();layer.locked=!layer.locked;render();app.emit('layers:changed')};
     const name=document.createElement('div');name.className='layerName';name.textContent=label(layer.name);name.title=app.layers.pathLabel(layer);
-    const op=document.createElement('input');op.type='range';op.min=0;op.max=100;op.value=Math.round(layer.opacity*100);op.oninput=e=>{layer.opacity=e.target.value/100;app.emit('composite:dirty')};
-    row.append(vis,lock,name,op);return row;
+    const load=document.createElement('button');load.className='layerPngButton';load.textContent='📥';load.title='Загрузить PNG в этот слой';load.setAttribute('aria-label','Загрузить PNG · '+app.layers.pathLabel(layer));load.onclick=e=>{e.stopPropagation();app.layerPngIO?.openFor(layer.id)};
+    const save=document.createElement('button');save.className='layerPngButton';save.textContent='📤';save.title='Сохранить PNG этого слоя';save.setAttribute('aria-label','Сохранить PNG · '+app.layers.pathLabel(layer));save.onclick=e=>{e.stopPropagation();app.layerPngIO?.save(layer.id)};
+    const op=document.createElement('input');op.type='range';op.min=0;op.max=100;op.value=Math.round(layer.opacity*100);op.title='Прозрачность слоя';op.oninput=e=>{layer.opacity=e.target.value/100;app.emit('composite:dirty')};
+    row.append(vis,lock,name,load,save,op);return row;
   }
   function renderGroup(group,depth){
     box.appendChild(groupRow(group,depth));if(!group.expanded)return;
