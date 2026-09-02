@@ -76,13 +76,18 @@ export default{
   mount(app){
     const input=document.getElementById('glItemFile'),openButton=document.getElementById('openGlItem'),saveButton=document.getElementById('saveGlItem');
 
-    async function save(){
+    async function build(){
       const layer=app.layers.active();if(!layer){app.emit('status','Сначала выберите слой');return null}
       const now=new Date().toISOString(),old=layer.itemMeta&&typeof layer.itemMeta==='object'?layer.itemMeta:{};
       const manifest={...old,format:FORMAT,version:VERSION,id:old.id||layer.id,name:old.name||app.layerLabels?.get(layer.name)||layer.name,kind:old.kind||'sprite',slot:layer.slot||layer.id,tags:Array.isArray(old.tags)?old.tags:[],image:IMAGE_NAME,canvas:{width:layer.canvas.width,height:layer.canvas.height},layer:{id:layer.id,parentId:layer.parentId,z:layer.z},createdAt:old.createdAt||now,updatedAt:now};
       layer.itemMeta=manifest;
       const bytes=createStoredZip([{name:MANIFEST_NAME,data:encoder.encode(JSON.stringify(manifest,null,2))},{name:IMAGE_NAME,data:await canvasPng(layer.canvas)}]);
-      download(bytes,`${safeName(manifest.id)}.glitem`);app.mobileLayout?.closeSheet?.();app.emit('status',`.glitem сохранён · ${app.layers.pathLabel(layer)}`);return{manifest,bytes};
+      return{manifest,bytes,fileName:`${safeName(manifest.id)}.glitem`,layer};
+    }
+
+    async function save(){
+      const item=await build();if(!item)return null;
+      download(item.bytes,item.fileName);app.mobileLayout?.closeSheet?.();app.emit('status',`.glitem сохранён · ${app.layers.pathLabel(item.layer)}`);return item;
     }
 
     async function loadFile(file){
@@ -104,6 +109,6 @@ export default{
     if(input)input.onchange=async event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;try{await loadFile(file)}catch(error){app.emit('status','Ошибка .glitem: '+error.message)}};
     if(openButton)openButton.onclick=openPicker;
     if(saveButton)saveButton.onclick=()=>save().catch(error=>app.emit('status','Ошибка .glitem: '+error.message));
-    app.glItemIO={save,loadFile,openPicker,format:FORMAT,version:VERSION};
+    app.glItemIO={build,save,loadFile,openPicker,format:FORMAT,version:VERSION};
   }
 };
