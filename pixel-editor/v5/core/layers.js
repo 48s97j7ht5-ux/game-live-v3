@@ -31,6 +31,7 @@ const GROUPS=[
 // Folder placement is only navigation. z is the independent render order.
 const DEFAULT_LAYERS=[
   {id:'hair_back',parentId:'hair',slot:'hair_back',z:0},
+  {id:'body_base',parentId:'body',slot:'body_base',z:90},
   {id:'body_legs',parentId:'legs',slot:'body_legs',z:100},
   {id:'body_arms',parentId:'arms',slot:'body_arms',z:110},
   {id:'body_torso',parentId:'torso',slot:'body_torso',z:120},

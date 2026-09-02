@@ -1,6 +1,7 @@
 const RU={
   hair_back:'Задние',
   hair_front:'Передние',
+  body_base:'Цельное тело',
   body_legs:'Основа',
   body_torso:'Основа',
   body_arms:'Основа',

@@ -5,6 +5,7 @@
   "canvas": {"w": 135, "h": 400},
   "layers": [
     {"id":"hair_back","group":"hair","slot":"hair_back","z":0,"file":null},
+    {"id":"body_base","group":"body","slot":"body_base","z":90,"file":null},
     {"id":"body_legs","group":"legs","slot":"body_legs","z":100,"file":null},
     {"id":"body_arms","group":"arms","slot":"body_arms","z":110,"file":null},
     {"id":"body_torso","group":"torso","slot":"body_torso","z":120,"file":null},
