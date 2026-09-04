@@ -1,0 +1,53 @@
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark;--bg:#111;--panel:#181818;--panel2:#20232a;--line:#333;--accent:#b6ff00;--text:#eee;--muted:#9aa3ad}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}button,label,input,select{font:inherit}button,label,input,select{background:#292d36;color:#eee;border:1px solid #454b58;border-radius:10px;padding:8px}.bar{position:sticky;top:0;z-index:20;display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#181818;border-bottom:1px solid #333}.wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:10px;padding:10px}.stage{overflow:auto;max-height:calc(100vh - 76px);background:#181818;border:1px solid #333;border-radius:10px;padding:10px}.board{position:relative;margin:auto;width:max-content;touch-action:pan-x pan-y}.board canvas{position:absolute;left:0;top:0;image-rendering:pixelated}.board #overlay,.board #ref{pointer-events:none}.side{background:#181818;border:1px solid #333;border-radius:10px;padding:10px}.card{border:1px solid #333;border-radius:12px;padding:10px;margin:8px 0}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:8px 0}.small{font-size:12px;color:#aaa}.status{font:12px ui-monospace,monospace;white-space:pre-wrap;color:#9fe;background:#111;padding:8px;border-radius:8px}.palette{display:block}.paletteFamilies{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.paletteShades{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.paletteShades[data-count="6"]{grid-template-columns:repeat(6,1fr)}.paletteFamilies{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #30343d}.paletteFamily,.paletteShade{width:100%;aspect-ratio:1;min-height:0}.sw{padding:0}.paletteFamily.activeBtn,.paletteShade.activeBtn{outline:3px solid var(--accent);outline-offset:1px}.layers{display:flex;flex-direction:column;gap:5px;overflow-x:hidden}.layer{display:grid;grid-template-columns:34px 34px 1fr 62px;gap:5px;align-items:center;padding:5px;border:1px solid #333;border-radius:8px;background:#20232a}.layerGroup{background:#282d36;border-color:#46505f}.layerGroupName{font-weight:700;cursor:pointer}.layerLeaf{background:#20232a}.layerInheritedHidden{opacity:.55}.layerInheritedLocked .layerName{color:#aeb7c5}.layer.active{outline:2px solid var(--accent)}.layer input[type=range]{width:62px}.layerName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.activeBtn{outline:2px solid var(--accent)!important;box-shadow:0 0 0 1px #222 inset}.loupeWrap{text-align:center;overflow:auto}#loupe{width:315px;height:315px;border:2px solid #666;background:#111;touch-action:none;image-rendering:pixelated}.nav{display:grid;grid-template-columns:repeat(3,48px);gap:5px;justify-content:center}.blank{visibility:hidden}.v6MobileShell{display:none}
+
+@media(max-width:860px){
+  html,body{width:100%;height:100%;overflow:hidden;background:#0d0d0d}
+  body.pixelLabV6Mobile{height:100dvh;padding:0;overscroll-behavior:none}
+  .pixelLabV6Mobile>.bar{display:none}
+  .pixelLabV6Mobile>.wrap{display:block;height:100dvh;padding:0;overflow:hidden}
+  .pixelLabV6Mobile .side{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;border:0;padding:0}
+  .pixelLabV6Mobile .stage{display:block;position:fixed;left:0;right:0;top:128px;bottom:164px;max-height:none;border:0;border-radius:0;padding:0;background:#444;overflow:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch}
+  .pixelLabV6Mobile .board{margin:0 auto;touch-action:pan-x pan-y;transform-origin:0 0}
+  .pixelLabV6Mobile .v6MobileShell{display:block;position:fixed;inset:0;z-index:80;pointer-events:none}
+  .v6Topbar,.v6PaletteRail,.v6CanvasTools,.v6LayersRail,.v6Dock,.v6Scrim{pointer-events:auto}
+
+  .v6Topbar{position:fixed;left:0;right:0;top:0;height:56px;display:grid;grid-template-columns:48px 1fr 48px 48px 48px;gap:6px;align-items:center;padding:7px 8px;background:#151515;border-bottom:1px solid #2e2e2e}
+  .v6Topbar button{height:42px;min-width:0;padding:0;background:#24262c;border:1px solid #3d414b;border-radius:12px;font-size:18px}
+  .v6Topbar .v6LayerTitle{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 10px}
+
+  .v6PaletteRail{position:fixed;left:0;right:0;top:56px;height:72px;background:#111;border-bottom:1px solid #2d2d2d;padding:6px 8px;overflow:hidden}
+  .v6PaletteHost{height:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+  .v6PaletteHost #palette{display:flex!important;gap:8px;align-items:center;min-width:max-content;height:100%}
+  .v6PaletteHost .paletteFamilies,.v6PaletteHost .paletteShades{display:flex!important;gap:7px;margin:0;padding:0;border:0;height:100%;align-items:center}
+  .v6PaletteHost .paletteFamily,.v6PaletteHost .paletteShade{width:48px!important;height:48px!important;min-width:48px!important;aspect-ratio:auto!important;border-radius:8px;padding:0}
+
+  .v6CanvasTools{position:fixed;right:10px;top:144px;display:grid;gap:8px;z-index:84}
+  .v6CanvasTools button{width:46px;height:46px;padding:0;border-radius:14px;background:rgba(24,24,24,.9);font-size:24px}
+
+  .v6LayersRail{position:fixed;left:0;right:0;bottom:82px;height:82px;background:#151515;border-top:1px solid #303030;padding:7px 8px;overflow:hidden}
+  .v6LayersHost{height:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+  .v6LayersHost #layers{display:flex!important;flex-direction:row!important;gap:7px;min-width:max-content;height:100%}
+  .v6LayersHost .layer{width:86px;min-width:86px;height:66px;display:grid!important;grid-template-columns:28px 1fr!important;grid-template-rows:1fr 20px;gap:2px;padding:5px;border-radius:10px;overflow:hidden}
+  .v6LayersHost .layer>input[type=range]{display:none}
+  .v6LayersHost .layerName{grid-column:1/3;grid-row:2;font-size:10px;text-align:center}
+  .v6LayersHost .layer button{min-width:0;padding:2px;font-size:12px}
+  .v6LayersHost .layerGroup{width:96px;min-width:96px}
+
+  .v6Dock{position:fixed;left:0;right:0;bottom:0;height:82px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:#171717;border-top:1px solid #333}
+  .v6Dock button{min-width:0;padding:5px 0;border-radius:12px;font-size:19px;background:#f2f2f2;color:#222;border-color:#ddd}
+  .v6Dock button.activeBtn{background:var(--accent);color:#111}
+  .v6Dock small{display:block;font-size:8px;line-height:1.1;margin-top:2px}
+
+  .v6Scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:89}
+  .v6Scrim.show{display:block}
+  .pixelLabV6Mobile .v6SheetOpen{display:block!important;position:fixed!important;left:8px!important;right:8px!important;bottom:90px!important;top:auto!important;z-index:90!important;max-height:68dvh!important;overflow:auto!important;margin:0!important;padding:12px!important;border:1px solid #4b5565!important;border-radius:18px!important;background:#181818!important;box-shadow:0 -10px 34px rgba(0,0,0,.48)!important;pointer-events:auto!important;opacity:1!important}
+  .pixelLabV6Mobile .v6SheetOpen#mobileFilesPanel,.pixelLabV6Mobile .mobileFilesPanel.v6SheetOpen{display:block!important}
+  .pixelLabV6Mobile .layersCard.v6SheetOpen #layers{display:flex!important;flex-direction:column!important;height:auto!important;min-width:0!important;overflow:visible!important}
+  .pixelLabV6Mobile .layersCard.v6SheetOpen .layer{width:auto!important;min-width:0!important;height:auto!important;display:grid!important;grid-template-columns:34px 34px 1fr 62px!important;grid-template-rows:auto!important}
+  .pixelLabV6Mobile .layersCard.v6SheetOpen .layerName{grid-column:auto!important;grid-row:auto!important;font-size:inherit!important;text-align:left!important}
+  .pixelLabV6Mobile .layersCard.v6SheetOpen .layer>input[type=range]{display:block!important}
+  .pixelLabV6Mobile .loupeCard.v6SheetOpen #loupe{width:min(88vw,430px);height:min(88vw,430px);max-height:48dvh}
+  .pixelLabV6Mobile .controlsCard.v6SheetOpen{pointer-events:auto}
+  .pixelLabV6Mobile .mobileFilesPanel{display:none}
+}
