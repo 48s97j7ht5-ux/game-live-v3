@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>Pixel Lab 400 V6 Mobile</title>
+  <link rel="stylesheet" href="../v5/layer-png.css?v=20260904-v6">
+  <link rel="stylesheet" href="./styles.css?v=20260904-v6">
+</head>
+<body>
+  <div class="bar">
+    <label>Composite <input id="spriteFile" type="file" accept="image/*"></label>
+    <label>Ref <input id="refFile" type="file" accept="image/*"></label>
+    <button id="refToBody">🧍 Ref → Body</button>
+    <input id="projectFile" type="file" accept=".pixelproject,application/json" hidden>
+    <input id="glItemFile" type="file" accept=".glitem,application/zip" hidden>
+    <input id="githubTokenFile" type="file" accept=".gltoken,application/json" hidden>
+    <input id="layerPngFile" type="file" accept="image/png,.png" hidden>
+    <button id="openProject">Open project</button>
+    <button id="saveProject">Save project</button>
+    <button id="openGlItem">Open .glitem</button>
+    <button id="saveGlItem">Save .glitem</button>
+    <button id="githubConnect">GitHub key</button>
+    <button id="githubSaveProject">GitHub project</button>
+    <button id="githubSaveItem">GitHub item</button>
+    <button id="githubFiles">GitHub files</button>
+    <button id="undo">↶ Undo</button>
+    <button id="export">Export composite</button>
+    <button id="exportLayer">Export layer</button>
+  </div>
+
+  <div class="wrap">
+    <div class="stage">
+      <div class="board" id="board">
+        <canvas id="ref"></canvas>
+        <canvas id="paint"></canvas>
+        <canvas id="overlay"></canvas>
+      </div>
+    </div>
+
+    <aside class="side">
+      <b>Pixel Lab 400 V6 · Mobile First</b>
+      <div class="small">Большой холст, палитра сверху, слои и инструменты снизу.</div>
+
+      <div class="card controlsCard">
+        <div class="row">Zoom <input id="zoom" type="range" min="1" max="6" value="2"><b id="zoomVal">2×</b></div>
+        <div class="row">Ref <input id="refOpacity" type="range" min="0" max="100" value="25"><b id="refOpacityVal">25%</b></div>
+      </div>
+
+      <div class="card viewCard"><b>Режим просмотра</b><div id="viewModes" class="row"></div></div>
+
+      <div class="card layersCard">
+        <div class="row"><b>Структура персонажа</b></div>
+        <div id="layers" class="layers"></div>
+      </div>
+
+      <div class="card loupeCard">
+        <div class="row"><b>🔬 Лупа</b><span id="coord">x67 y200</span></div>
+        <div id="tools" class="row"></div>
+        <div class="row"><label>Окно <select id="loupeSize"><option>11</option><option selected>15</option><option>21</option></select></label><label><input id="tapOnly" type="checkbox" checked> tap-only</label></div>
+        <div class="loupeWrap"><canvas id="loupe"></canvas></div>
+        <div class="nav"><span class="blank">.</span><button data-move="0,-1">↑</button><span class="blank">.</span><button data-move="-1,0">←</button><button data-move="0,0">◎</button><button data-move="1,0">→</button><span class="blank">.</span><button data-move="0,1">↓</button><span class="blank">.</span></div>
+      </div>
+
+      <div class="card paletteCard">
+        <b>Палитра</b>
+        <div id="palette" class="palette"></div>
+        <div class="row customColorRow"><input id="customColor" type="color" value="#090404"><button id="useCustom">Взять</button></div>
+      </div>
+
+      <div id="status" class="status"></div>
+    </aside>
+  </div>
+
+  <script type="importmap">
+    {"imports":{"#pixel-app":"../v5/core/app.js?v=20260902-core-fix2"}}
+  </script>
+  <script type="module" src="./main.js?v=20260904-v6"></script>
+</body>
+</html>
