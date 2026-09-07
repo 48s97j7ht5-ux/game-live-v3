@@ -24,6 +24,7 @@ export default{
         <button data-files="github-disconnect">Отключить GitHub</button>
       </div>
       <div class="mobileFilesSection"><div class="mobileFilesTitle">Открыть изображение</div>
+        <div class="small">PNG по размеру холста или меньше загружается пиксель в пиксель.</div>
         <button data-files="sprite">🖼️ Открыть composite</button>
         <button data-files="ref">🧷 Открыть подложку</button>
       </div>
@@ -55,3 +56,4 @@ export default{
     app.mobileFiles={panel,closeButton:panel.querySelector('[data-files="close"]')};
   }
 };
+

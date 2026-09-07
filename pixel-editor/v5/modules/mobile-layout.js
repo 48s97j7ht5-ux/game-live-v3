@@ -11,7 +11,7 @@ export default{
     if(!side||!stage||!loupeCard||!layersCard||!paletteCard||!toolsRow)return;
 
     const top=document.createElement('div');top.className='mobileTop';top.innerHTML='<button data-mob="undo">↶</button><button class="mobileLayerName" data-mob="layers-top" aria-label="Выбрать слой">Слой</button><button data-mob="ref" aria-label="Показать или скрыть подложку">👁 Ref</button><button data-mob="bg" aria-label="Переключить фон">🟪</button><button data-mob="files">Файлы</button>';
-    const quick=document.createElement('div');quick.className='mobileQuick';quick.innerHTML='<button data-quick="magic" aria-label="Подогнать подложку под палитру">✨ Magic</button><button data-quick="body" aria-label="Перенести подложку в цельное тело">🧍 Ref → Body</button><label class="quickCheck"><input type="checkbox" data-quick="refRaw"> Ref 1:1</label>';
+    const quick=document.createElement('div');quick.className='mobileQuick';quick.innerHTML='<button data-quick="magic" aria-label="Подогнать подложку под палитру">✨ Magic</button><button data-quick="body" aria-label="Перенести подложку в цельное тело">🧍 Ref → Body</button><label class="quickCheck" title="Непрозрачность подложки 100%"><input type="checkbox" data-quick="refRaw" aria-label="Непрозрачность подложки 100%"> Ref 100%</label>';
     const dock=document.createElement('div');dock.className='mobileDock';dock.innerHTML='<button data-tool="pencil">✏️<small>Pixel</small></button><button data-tool="eraser">⌫<small>Erase</small></button><button data-tool="picker">🎯<small>Pick</small></button><button data-tool="trace">🧬<small>Trace</small></button><button data-tool="hand">✋<small>Hand</small></button><button data-mob="palette">●<small>Color</small></button><button data-mob="preview">👁<small>Preview</small></button>';
     const scrim=document.createElement('div');scrim.className='mobileScrim';
     body.append(top,quick,scrim,dock);
@@ -55,3 +55,4 @@ export default{
     app.mobileLayout={setWorkspace,openSheet,closeSheet};
   }
 };
+

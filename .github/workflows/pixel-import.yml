@@ -1,0 +1,35 @@
+name: Pixel Lab PNG import
+
+on:
+  pull_request:
+    paths:
+      - 'pixel-editor/v5/**'
+      - 'tests/pixel-import.cjs'
+      - '.github/workflows/pixel-import.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'pixel-editor/v5/**'
+      - 'tests/pixel-import.cjs'
+      - '.github/workflows/pixel-import.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pixel-import-deps" --no-audit --no-fund playwright@1.62.1 pngjs@7.0.0
+          node "$RUNNER_TEMP/pixel-import-deps/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Check import, export and project pixels in mobile Chromium
+        run: |
+          NODE_PATH="$RUNNER_TEMP/pixel-import-deps/node_modules" node tests/pixel-import.cjs
