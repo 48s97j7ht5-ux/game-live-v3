@@ -1,0 +1,32 @@
+name: PNG laboratory
+on:
+  pull_request:
+    paths: ['pixel-editor/png-lab/**', 'tests/png-lab*.cjs', '.github/workflows/png-lab.yml']
+  push:
+    branches: [main]
+    paths: ['pixel-editor/png-lab/**', 'tests/png-lab*.cjs', '.github/workflows/png-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/png-lab-deps" --no-audit --no-fund playwright@1.62.1 pngjs@7.0.0
+          node "$RUNNER_TEMP/png-lab-deps/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Pixel regressions and mobile browser
+        run: |
+          NODE_PATH="$RUNNER_TEMP/png-lab-deps/node_modules" node tests/png-lab.cjs
+          NODE_PATH="$RUNNER_TEMP/png-lab-deps/node_modules" node tests/png-lab-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: png-lab-mobile
+          path: test-results/png-lab-*.png
