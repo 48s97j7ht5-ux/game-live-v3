@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#171c20">
+  <title>PNG · лаборатория Кати</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header><a href="../v5/" class="back">← Редактор v5</a><span class="badge">ПРОБА 01</span><h1>Из картинки<br><em>в пиксели.</em></h1><p>Сохраняем характер. Проверяем детали.</p></header>
+  <section class="card source-card" aria-label="Исходник">
+    <div class="eyebrow">01 / ИСХОДНИК</div>
+    <div class="source-row"><div><strong id="filename">Катя · исходник</strong><small id="source-size">Загружаю…</small></div><label class="file-button">Открыть PNG<input id="file" type="file" accept="image/png,.png"></label></div>
+    <button id="sample" class="text-button">Вернуть исходную Катю</button>
+    <p class="hint">Обработка внутри браузера. Исходный файл сохраняется без изменений.</p>
+  </section>
+  <section class="card" aria-label="Настройки обработки">
+    <div class="eyebrow">02 / РАЗМЕР И ЦВЕТ</div>
+    <div class="dimension-row"><label>Ширина PNG<input id="width" type="number" min="1" max="512" value="139" inputmode="numeric"></label><span>×</span><label>Высота PNG<input id="height" type="number" min="1" max="512" value="208" inputmode="numeric"></label></div>
+    <label class="check"><input id="aspect" type="checkbox" checked> Сохранять пропорции</label>
+    <div class="presets"><button data-height="208">208 px</button><button data-height="256">256 px</button><button data-height="384">384 px</button><button id="detect">Найти сетку</button></div>
+    <div id="detection" class="detection" hidden><p id="detection-text"></p><button id="apply-grid" hidden>Попробовать этот размер</button></div>
+    <p class="hint">Размер всего PNG. Высота тела 192 px измеряется отдельно, от макушки до стоп.</p>
+    <div class="options"><label>Палитра<select id="colors"><option value="48">До 48 цветов</option><option value="32">До 32 цветов</option><option value="24">До 24 цветов</option><option value="16">До 16 цветов</option></select></label><label>Прозрачный край<select id="coverage"><option value="0.5">Обычный</option><option value="0.3">Сохранить тонкие края</option><option value="0.7">Убрать слабые края</option></select></label></div>
+    <button id="process" class="primary" disabled>Собрать пиксели</button>
+    <button id="cancel" class="text-button" hidden>Отменить обработку</button>
+    <p id="status" role="status" aria-live="polite">Загружаю исходник…</p>
+  </section>
+  <section class="comparison" aria-label="Сравнение">
+    <div class="eyebrow">03 / ПОСМОТРИ БЛИЖЕ</div>
+    <div class="regions" role="group" aria-label="Участок"><button data-region="full" aria-pressed="true">Вся Катя</button><button data-region="face" aria-pressed="false">Лицо</button><button data-region="hands" aria-pressed="false">Кисти</button><button data-region="calves" aria-pressed="false">Икры</button></div>
+    <div class="view-settings"><label>Слева<select id="left-view"><option value="original">Исходник</option><option value="nearest">Обычное уменьшение</option></select></label><label>Фон<select id="background"><option value="checker">Шахматка</option><option value="light">Светлый</option><option value="dark">Тёмный</option><option value="pink">Розовый</option></select></label></div>
+    <div id="panes" class="panes checker"><figure><figcaption id="left-caption">Исходник</figcaption><canvas id="before" aria-label="Исходник, увеличенный участок"></canvas></figure><figure><figcaption>Восстановление <span id="stale"></span></figcaption><canvas id="after" aria-label="Результат, увеличенный участок"></canvas></figure></div>
+    <div class="zoom-row"><label for="zoom">Масштаб</label><input id="zoom" type="range" min="1" max="4" value="1" step="0.25"><output id="zoom-label">1×</output></div>
+    <button id="hold" class="hold">Удерживай, чтобы увидеть исходник справа</button>
+    <p class="hint">Обе стороны показывают один участок. В режиме обычного уменьшения палитра та же — сравнивай форму и контур.</p>
+    <div id="result-info" class="result-info">Результат появится после обработки.</div>
+    <div id="palette" class="palette" aria-label="Цвета результата"></div>
+    <button id="download" class="primary" disabled>Скачать прозрачный PNG</button>
+  </section>
+  <footer><p>Экспериментальная адаптация алгоритмов Retro Diffusion. Автопоиск сетки может ошибаться; всегда сравнивай детали.</p><a href="README.md">Как устроено и лицензия</a></footer>
+</main>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>
