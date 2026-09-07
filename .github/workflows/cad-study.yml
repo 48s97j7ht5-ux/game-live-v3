@@ -1,0 +1,33 @@
+name: CAD comparison
+on:
+  pull_request:
+    paths: ['pixel-editor/cad-study/**', 'scripts/cad_experiment.py', 'tests/cad-study.*', '.github/workflows/cad-study.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies
+        run: |
+          pip install numpy==2.3.5 scipy==1.17.0 Pillow==12.3.0
+          npm install --prefix "$RUNNER_TEMP/cad-deps" --no-audit --no-fund playwright@1.62.1 pngjs@7.0.0
+          node "$RUNNER_TEMP/cad-deps/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Image invariants and mobile browser
+        run: |
+          OPENBLAS_NUM_THREADS=1 python tests/cad-study.py
+          NODE_PATH="$RUNNER_TEMP/cad-deps/node_modules" node tests/cad-study.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cad-mobile
+          path: test-results/cad-*.png

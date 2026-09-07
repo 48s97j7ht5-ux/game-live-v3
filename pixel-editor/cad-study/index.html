@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Катя · адаптивное уменьшение</title>
+<link rel="stylesheet" href="style.css">
+<body><main>
+<header><a href="../png-lab/">← PNG-лаборатория</a><span>ПРОБА 02</span></header>
+<h1>Сохранить<br><em>маленькие детали.</em></h1>
+<p class="intro">Content-Adaptive Downscaling на Кате. Одинаковый размер, общая прозрачность, одна палитра.</p>
+<section class="controls">
+<div class="row"><label>Высота всего PNG<select id="size"><option value="208">208 px · 139 × 208</option><option value="256">256 px · 171 × 256</option></select></label>
+<label>Слева<select id="method"><option value="nearest">Обычное уменьшение</option><option value="area">Усреднение</option><option value="source">Исходник</option></select></label></div>
+<div class="switch" aria-label="Палитра"><button data-palette="48" class="selected" aria-pressed="true">48 цветов</button><button data-palette="raw" aria-pressed="false">До палитры</button></div>
+<p class="hint">192 px от макушки до стоп здесь не калиброваны. Размер относится ко всему файлу.</p>
+</section>
+<nav class="regions" aria-label="Участок"><button data-region="all" class="selected" aria-pressed="true">Вся Катя</button><button data-region="face" aria-pressed="false">Лицо</button><button data-region="hands" aria-pressed="false">Кисти</button><button data-region="calves" aria-pressed="false">Икры</button></nav>
+<div class="row background"><label>Фон<select id="background"><option value="light">Светлый</option><option value="dark">Тёмный</option><option value="pink">Розовый</option><option value="checker">Шахматный</option></select></label><label>Масштаб <output id="zoom-label">1×</output><input id="zoom" type="range" min="1" max="3" step=".25" value="1"></label></div>
+<p id="status" role="status">Загружаю сравнение…</p>
+<div class="comparison"><figure><figcaption id="left-label">Обычное уменьшение</figcaption><canvas id="left" aria-label="Изображение для сравнения"></canvas></figure><figure><figcaption>Адаптивное · эксперимент</figcaption><canvas id="right" aria-label="Адаптивное уменьшение"></canvas></figure></div>
+<button id="hold">Удерживай: исходник справа</button>
+<p id="details" class="hint"></p>
+<div class="downloads"><a id="download" class="primary" aria-disabled="true">Скачать адаптивный PNG</a><a id="baseline" aria-disabled="true">Скачать левый вариант</a></div>
+<details><summary>Что именно мы проверяем</summary>
+<p>Это предварительно рассчитанный эксперимент на одном исходнике. Реализация по статье Kopf, Shamir, Peers (2013): адаптивные гауссовы ядра в CIELAB, итерации E/M и пространственная коррекция. Как в пиксельных примерах авторов, коррекция направления краёв отключена.</p>
+<p>Численные параметры и инициализация адаптированы, расчёт ограничен 60 итерациями. Это не авторская программа и не подтверждённое точное воспроизведение её результатов. Прозрачность обработана отдельно; во всех уменьшенных вариантах она одинаковая.</p>
+<p>«48 цветов» использует одну палитру из исходника для всех методов и размеров. «До палитры» показывает цветовой результат каждого метода без этого ограничения. Просмотр всегда без сглаживания.</p>
+<a href="README.md">Методика, параметры и ограничения</a> · <a href="https://johanneskopf.de/publications/downscaling/">Статья и примеры авторов</a>
+</details><footer>Сначала сравни лицо и шнурок, затем обе икры. Увеличение помогает найти дефекты; общий вид — оценить рисунок.</footer>
+</main><script type="module" src="app.mjs"></script></body></html>
