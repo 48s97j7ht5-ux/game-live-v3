@@ -1,0 +1,31 @@
+name: White dress transfer test
+on:
+  pull_request:
+    paths: ['pixel-editor/dress-study/**', 'scripts/dress_study.py', 'tests/dress-study.cjs', '.github/workflows/dress-study.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/dress-deps" --no-audit --no-fund playwright@1.62.1 pngjs@7.0.0
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "CHROME_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            node "$RUNNER_TEMP/dress-deps/node_modules/playwright/cli.js" install --with-deps chromium
+          fi
+      - name: Verify patches and mobile export
+        run: NODE_PATH="$RUNNER_TEMP/dress-deps/node_modules" node tests/dress-study.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dress-mobile
+          path: test-results/dress-*.png
