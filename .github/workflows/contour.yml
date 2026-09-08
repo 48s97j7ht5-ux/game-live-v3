@@ -1,0 +1,27 @@
+name: Calf contour experiment
+on:
+  pull_request:
+    paths: ['pixel-editor/contour/**', 'scripts/contour_experiment.py', 'tests/contour.cjs', '.github/workflows/contour.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/contour-deps" --no-audit --no-fund playwright@1.62.1 pngjs@7.0.0
+          node "$RUNNER_TEMP/contour-deps/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Verify patches and mobile export
+        run: NODE_PATH="$RUNNER_TEMP/contour-deps/node_modules" node tests/contour.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contour-mobile
+          path: test-results/contour-*.png
