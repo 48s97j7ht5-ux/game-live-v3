@@ -19,3 +19,10 @@ The run proposes five silhouette pixels and three outline pixels. All changes us
 ## Verification
 
 Tests check source/base hashes and patch before-values; palette and binary alpha; exact edit bounds; shape edits within one pixel of the original boundary; connected components and holes unchanged for the full proposal; all modes and disabled patch behavior. Mobile browser CI verifies controls, source comparison, per-pixel rejection and exported PNG byte content with overlay enabled. CI screenshots are review artifacts.
+
+
+## Body outline extension
+
+Adds six fixed review windows for shoulders, arms including hands, and thighs. Silhouette changes remain confined to the old calf proposal; the new body pass changes RGB only. It uses the same dark-source support and luminance thresholds as the calf pass, but examines the four-connected silhouette boundary to include the tops of shoulders. A skin-color guard (R>1.15G and R>1.2B on the current weak candidate) excludes pale clothing trim and dark features. This is a heuristic specific to this image, not a general skin classifier.
+
+Ten new proposals: left/right shoulders 1/2, arms 4/2, thighs 1/0. Total outline proposals including calves: 13. Existing five calf silhouette proposals and three calf outline proposals are preserved. No candidate is forced into a zero-result region. The UI opens on the left arm, fits zoom crops to each region, and allows rejecting every proposal. Counts in the region menu show proposed outline edits; the status shows the actual enabled changes across the whole image. Script additionally writes a temporary body comparison sheet beside the repository. Preview images contain surrounding context which is not necessarily edited.
