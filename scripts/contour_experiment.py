@@ -64,6 +64,30 @@ for reg in regions:
    if currentL>.30 and currentL-rgb_to_lab(chosen)[0]>.12:
     outlines[row,col,:3]=chosen;count+=1
  metrics.append(dict(region=reg['id'],outline_pixels=count))
+# Extend color-only repair to skin at a four-connected silhouette boundary.
+# Keep the established calf proposals exactly as before.
+extra_regions=[
+ dict(id='shoulder_left',name='Плечо слева',bounds=[46,48,11,14],crop=[44,45,17,21]),
+ dict(id='shoulder_right',name='Плечо справа',bounds=[78,47,14,16],crop=[75,44,20,23]),
+ dict(id='arm_left',name='Рука слева',bounds=[36,62,20,58],crop=[34,60,24,62]),
+ dict(id='arm_right',name='Рука справа',bounds=[80,63,17,60],crop=[78,61,21,64]),
+ dict(id='thigh_left',name='Бедро слева',bounds=[47,120,20,22],crop=[45,116,24,29]),
+ dict(id='thigh_right',name='Бедро справа',bounds=[67,123,18,19],crop=[65,119,23,27])]
+boundary=mask&~binary_erosion(mask)
+for reg in extra_regions:
+ x,y,w,h=reg['bounds'];count=0
+ for row,col in np.argwhere(boundary):
+  if not(x<=col<x+w and y<=row<y+h):continue
+  r,g,b=base[row,col,:3].astype(float)
+  # Protect dark features and pale clothing trim from being mistaken for skin.
+  if not(r>1.15*g and r>1.2*b):continue
+  if darkcoverage[row,col]<.10:continue
+  currentL=rgb_to_lab(base[row,col,:3])[0]
+  chosen=palette[tree.query(rgb_to_lab(darkrgb[row,col]))[1]]
+  if currentL>.30 and currentL-rgb_to_lab(chosen)[0]>.12:
+   outlines[row,col,:3]=chosen;count+=1
+ metrics.append(dict(region=reg['id'],outline_pixels=count))
+regions.extend(extra_regions)
 patches=[]
 for kind,arr in [('shape',shape),('outline',outlines)]:
  for y,x in np.argwhere(np.any(arr!=base,axis=2)):
@@ -77,7 +101,17 @@ for p in patches:
 board=Image.new('RGB',(26*7*4,65*7*2+30),'#eee9df');draw=ImageDraw.Draw(board)
 for i,(name,arr) in enumerate([('Weak',base),('Shape',shape),('Outline',outlines),('Both',combined)]):
  draw.text((i*182+6,5),name,fill='black')
- for j,r in enumerate(regions):
+ for j,r in enumerate(regions[:2]):
   x,y,w,h=r['crop'];im=Image.fromarray(arr).crop((x,y,x+w,y+h)).resize((w*7,h*7),Image.Resampling.NEAREST);board.paste(im,(i*182,30+j*455),im)
 board.save(ROOT.parent/'contour-review.png')
 print(json.dumps({'shape':sum(p['kind']=='shape' for p in patches),'outline':sum(p['kind']=='outline' for p in patches),'metrics':metrics}))
+
+# Additional region comparison contact sheet for visual review.
+board=Image.new('RGB',(420, len(extra_regions)*340),'#eee9df');draw=ImageDraw.Draw(board)
+for j,r in enumerate(extra_regions):
+ draw.text((5,j*340+5),r['id'],fill='black')
+ x,y,w,h=r['crop'];scale=min(190//w,300//h)
+ for i,arr in enumerate([base,outlines]):
+  im=Image.fromarray(arr).crop((x,y,x+w,y+h)).resize((w*scale,h*scale),Image.Resampling.NEAREST)
+  board.paste(im,(i*210+5,j*340+30),im)
+board.save(ROOT.parent/'outline-body-review.png')

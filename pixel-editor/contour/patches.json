@@ -33,6 +33,102 @@
         26,
         63
       ]
+    },
+    {
+      "id": "shoulder_left",
+      "name": "Плечо слева",
+      "bounds": [
+        46,
+        48,
+        11,
+        14
+      ],
+      "crop": [
+        44,
+        45,
+        17,
+        21
+      ]
+    },
+    {
+      "id": "shoulder_right",
+      "name": "Плечо справа",
+      "bounds": [
+        78,
+        47,
+        14,
+        16
+      ],
+      "crop": [
+        75,
+        44,
+        20,
+        23
+      ]
+    },
+    {
+      "id": "arm_left",
+      "name": "Рука слева",
+      "bounds": [
+        36,
+        62,
+        20,
+        58
+      ],
+      "crop": [
+        34,
+        60,
+        24,
+        62
+      ]
+    },
+    {
+      "id": "arm_right",
+      "name": "Рука справа",
+      "bounds": [
+        80,
+        63,
+        17,
+        60
+      ],
+      "crop": [
+        78,
+        61,
+        21,
+        64
+      ]
+    },
+    {
+      "id": "thigh_left",
+      "name": "Бедро слева",
+      "bounds": [
+        47,
+        120,
+        20,
+        22
+      ],
+      "crop": [
+        45,
+        116,
+        24,
+        29
+      ]
+    },
+    {
+      "id": "thigh_right",
+      "name": "Бедро справа",
+      "bounds": [
+        67,
+        123,
+        18,
+        19
+      ],
+      "crop": [
+        65,
+        119,
+        23,
+        27
+      ]
     }
   ],
   "patches": [
@@ -137,6 +233,206 @@
       "source_dark_coverage": 0.3155
     },
     {
+      "id": "outline-83-47",
+      "kind": "outline",
+      "x": 83,
+      "y": 47,
+      "before": [
+        235,
+        155,
+        122,
+        255
+      ],
+      "after": [
+        18,
+        11,
+        11,
+        255
+      ],
+      "source_coverage": 0.9892,
+      "source_dark_coverage": 0.2567
+    },
+    {
+      "id": "outline-84-47",
+      "kind": "outline",
+      "x": 84,
+      "y": 47,
+      "before": [
+        223,
+        156,
+        127,
+        255
+      ],
+      "after": [
+        13,
+        8,
+        7,
+        255
+      ],
+      "source_coverage": 0.9825,
+      "source_dark_coverage": 0.2538
+    },
+    {
+      "id": "outline-49-51",
+      "kind": "outline",
+      "x": 49,
+      "y": 51,
+      "before": [
+        251,
+        186,
+        151,
+        255
+      ],
+      "after": [
+        13,
+        8,
+        7,
+        255
+      ],
+      "source_coverage": 0.988,
+      "source_dark_coverage": 0.2408
+    },
+    {
+      "id": "outline-45-83",
+      "kind": "outline",
+      "x": 45,
+      "y": 83,
+      "before": [
+        247,
+        208,
+        182,
+        255
+      ],
+      "after": [
+        25,
+        16,
+        16,
+        255
+      ],
+      "source_coverage": 0.9874,
+      "source_dark_coverage": 0.3316
+    },
+    {
+      "id": "outline-39-107",
+      "kind": "outline",
+      "x": 39,
+      "y": 107,
+      "before": [
+        248,
+        190,
+        156,
+        255
+      ],
+      "after": [
+        13,
+        8,
+        7,
+        255
+      ],
+      "source_coverage": 0.9844,
+      "source_dark_coverage": 0.3313
+    },
+    {
+      "id": "outline-45-114",
+      "kind": "outline",
+      "x": 45,
+      "y": 114,
+      "before": [
+        247,
+        208,
+        182,
+        255
+      ],
+      "after": [
+        25,
+        16,
+        16,
+        255
+      ],
+      "source_coverage": 0.5412,
+      "source_dark_coverage": 0.4678
+    },
+    {
+      "id": "outline-45-117",
+      "kind": "outline",
+      "x": 45,
+      "y": 117,
+      "before": [
+        207,
+        130,
+        104,
+        255
+      ],
+      "after": [
+        13,
+        8,
+        7,
+        255
+      ],
+      "source_coverage": 0.9742,
+      "source_dark_coverage": 0.5886
+    },
+    {
+      "id": "outline-87-119",
+      "kind": "outline",
+      "x": 87,
+      "y": 119,
+      "before": [
+        247,
+        208,
+        182,
+        255
+      ],
+      "after": [
+        25,
+        16,
+        16,
+        255
+      ],
+      "source_coverage": 0.7004,
+      "source_dark_coverage": 0.6207
+    },
+    {
+      "id": "outline-91-120",
+      "kind": "outline",
+      "x": 91,
+      "y": 120,
+      "before": [
+        117,
+        74,
+        62,
+        255
+      ],
+      "after": [
+        25,
+        16,
+        16,
+        255
+      ],
+      "source_coverage": 0.9542,
+      "source_dark_coverage": 0.6079
+    },
+    {
+      "id": "outline-49-128",
+      "kind": "outline",
+      "x": 49,
+      "y": 128,
+      "before": [
+        223,
+        156,
+        127,
+        255
+      ],
+      "after": [
+        18,
+        11,
+        11,
+        255
+      ],
+      "source_coverage": 0.9864,
+      "source_dark_coverage": 0.371
+    },
+    {
       "id": "outline-57-171",
       "kind": "outline",
       "x": 57,
@@ -205,6 +501,30 @@
     {
       "region": "right",
       "outline_pixels": 1
+    },
+    {
+      "region": "shoulder_left",
+      "outline_pixels": 1
+    },
+    {
+      "region": "shoulder_right",
+      "outline_pixels": 2
+    },
+    {
+      "region": "arm_left",
+      "outline_pixels": 4
+    },
+    {
+      "region": "arm_right",
+      "outline_pixels": 2
+    },
+    {
+      "region": "thigh_left",
+      "outline_pixels": 1
+    },
+    {
+      "region": "thigh_right",
+      "outline_pixels": 0
     }
   ],
   "source_sha256": "774f385a85cf8118f11c64f929957ba30460896cb9c5de401bfa277c8379abd4",
