@@ -4,6 +4,8 @@
 
 Связь: [`face-compositor`](../face-compositor/), [`face-compositor.md`](face-compositor.md), референсы в [`characters/kat/reference/`](../characters/kat/reference/).
 
+**Оптимальный master (400 px, как лист «ТЕСТ МАСШТАБА»):** [`character-scale-kat.md`](character-scale-kat.md) — для full-body лучше **Cursor GenerateImage** или ваш лист; Gemini **Refine** — для доработки старых кадров, не замена sharp master.
+
 ---
 
 ## Технические рамки (зафиксировать в каждом промпте)
@@ -176,8 +178,8 @@ Avoid: watermark, star icon, text, logo, photorealistic rendering, 4k illustrati
 
 ## Как работать в Gemini (телефон)
 
-1. **Refine-тест:** прикрепить **размытый** старый PNG → промпт **«только фигура»** → `Redraw`, не `enhance`.
-2. Первый **чёткий** результат → новый master reference для слоёв лица.
+1. **Refine-тест:** размытый PNG + промпт **Refine** (прозрачный фон, тот же дизайн).
+2. Первый **чёткий** результат → master reference для следующих слоёв.
 3. Текст: без одежды/волос/украшений в промпте; внешность только через reference + «same character identity».
 4. Если модель упрямится в 1024 — явно: `Output aspect ratio 1:1, smallest native resolution, sprite not poster`.
 5. Проверка: zoom 400% — края **ступеньки**, не полупрозрачные пиксели.
