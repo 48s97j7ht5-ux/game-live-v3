@@ -65,6 +65,28 @@ function visibleColors(data){
   return colors.size;
 }
 
+function despeckleColors(data,width,height,strength){
+  const source=new Uint8ClampedArray(data),minimumSupport=strength>=70?3:4;
+  let changed=0;
+  for(let y=1;y<height-1;y++)for(let x=1;x<width-1;x++){
+    const i=y*width+x,q=i*4;
+    if(source[q+3]===0)continue;
+    const colors=new Map();
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+      if(dx===0&&dy===0)continue;
+      const n=((y+dy)*width+x+dx)*4;
+      if(source[n+3]===0)continue;
+      const key=(source[n]<<16)|(source[n+1]<<8)|source[n+2];
+      colors.set(key,(colors.get(key)||0)+1);
+    }
+    if(!colors.size)continue;
+    const current=(source[q]<<16)|(source[q+1]<<8)|source[q+2],winner=[...colors].sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0];
+    if(winner[0]===current||winner[1]<minimumSupport||(colors.get(current)||0)>1)continue;
+    data[q]=(winner[0]>>16)&255;data[q+1]=(winner[0]>>8)&255;data[q+2]=winner[0]&255;changed++;
+  }
+  return changed;
+}
+
 function neighborIndexes(x,y,width,height){
   const indexes=[];
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
@@ -139,5 +161,6 @@ export function cleanSprite(source,options={}){
   }
   const paletteLimit=options.paletteLimit===false?0:clamp(Number(options.paletteLimit)||64,2,256);
   if(paletteLimit)applyPalette(data,paletteLimit);
-  return{width,height,data,stats:{beforeColors,afterColors:visibleColors(data),removed,filled,neuralApplied,neuralRecall}};
+  const colorChanged=despeckleColors(data,width,height,strength);
+  return{width,height,data,stats:{beforeColors,afterColors:visibleColors(data),removed,filled,colorChanged,neuralApplied,neuralRecall}};
 }

@@ -21,4 +21,11 @@ const badMask={width,height,data:new Float32Array(width*height)};
 const fallback=cleanSprite({width,height,data},{strength:45,paletteLimit:false,neuralMask:badMask});
 assert.equal(fallback.stats.neuralApplied,false,'low-recall mask must be rejected');
 assert.ok(fallback.data.some((value,index)=>index%4===3&&value===255),'fallback must preserve the sprite');
+
+const noise=new Uint8ClampedArray(7*7*4);
+for(let y=1;y<6;y++)for(let x=1;x<6;x++){const i=(y*7+x)*4;noise.set([80,120,160,255],i)}
+noise.set([255,0,255,255],(3*7+3)*4);
+const spatial=cleanSprite({width:7,height:7,data:noise},{strength:70,paletteLimit:false});
+assert.deepEqual([...spatial.data.slice((3*7+3)*4,(3*7+3)*4+4)],[80,120,160,255],'3x3 pass must remove an isolated colour jump');
+assert.equal(spatial.stats.colorChanged,1);
 console.log('AI Clean core OK');

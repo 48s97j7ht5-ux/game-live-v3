@@ -1,4 +1,4 @@
-import{cleanSprite}from'./ai-clean-core.mjs?v=20260913-ai-clean1';
+import{cleanSprite}from'./ai-clean-core.mjs?v=20260913-ai-clean2';
 
 const VISION_URL='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs';
 const WASM_URL='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm';
@@ -60,7 +60,8 @@ export default{
         output.canvas.getContext('2d').putImageData(new ImageData(result.data,result.width,result.height),0,0);
         app.emit('layers:changed');app.emit('composite:dirty');app.mobileLayout?.closeSheet?.();
         const s=result.stats,neural=modelError?'нейросеть недоступна, применена безопасная пиксельная очистка':s.neuralApplied?'нейромаска принята':`нейромаска отклонена (${Math.round(s.neuralRecall*100)}% совпадения), рисунок сохранён`;
-        app.emit('status',`AI Clean готов · новый слой ${output.name} · ${neural} · цвета ${s.beforeColors} → ${s.afterColors} · удалено ${s.removed}, закрыто дырок ${s.filled}`);
+        const total=s.removed+s.filled+s.colorChanged,note=total?'':' · дефектов этого типа не найдено';
+        app.emit('status',`AI Clean готов · новый слой ${output.name} · ${neural} · изменено ${total} px: цвет ${s.colorChanged}, контур ${s.removed}, дырки ${s.filled} · цвета ${s.beforeColors} → ${s.afterColors}${note}`);
       }catch(error){app.emit('status','AI Clean: '+error.message)}
       finally{button.disabled=false;button.textContent='Очистить в копию'}
     }

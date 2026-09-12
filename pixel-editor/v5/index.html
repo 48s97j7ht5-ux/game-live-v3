@@ -44,8 +44,8 @@
       </div>
       <div class="card" id="aiCleanCard">
         <b>🧠 AI Clean</b>
-        <div class="small">Нейросеть уточняет силуэт, затем редактор жёстко чистит пиксели. Исходный слой не меняется.</div>
-        <div class="row"><label>Сила <input id="aiCleanStrength" type="range" min="0" max="100" value="45"></label><b id="aiCleanStrengthValue">45%</b></div>
+        <div class="small">Нейромаска защищает силуэт; пространственный фильтр 3×3 чистит цветовые скачки, альфу и контур. Исходный слой не меняется.</div>
+        <div class="row"><label>Сила <input id="aiCleanStrength" type="range" min="0" max="100" value="70"></label><b id="aiCleanStrengthValue">70%</b></div>
         <div class="row"><label><input id="aiCleanPalette" type="checkbox" checked> максимум 64 цвета</label></div>
         <button id="aiCleanApply">Очистить в копию</button>
       </div>
@@ -63,6 +63,6 @@
   <script type="importmap">
     {"imports":{"#pixel-app":"./core/app.js?v=20260902-core-fix2"}}
   </script>
-  <script type="module" src="./main.js?v=20260913-ai-clean1"></script>
+  <script type="module" src="./main.js?v=20260913-ai-clean2"></script>
 </body>
 </html>
