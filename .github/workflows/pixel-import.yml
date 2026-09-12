@@ -32,4 +32,5 @@ jobs:
           node "$RUNNER_TEMP/pixel-import-deps/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Check import, export and project pixels in mobile Chromium
         run: |
+          node tests/ai-clean.mjs
           NODE_PATH="$RUNNER_TEMP/pixel-import-deps/node_modules" node tests/pixel-import.cjs

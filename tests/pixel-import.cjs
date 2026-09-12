@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
   if(!file.startsWith(root+path.sep)){res.writeHead(403);res.end();return}
   fs.readFile(file,(error,data)=>{
     if(error){res.writeHead(404);res.end();return}
-    res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png'})[path.extname(file)]||'application/octet-stream');
+    res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png'})[path.extname(file)]||'application/octet-stream');
     res.end(data);
   });
 });
@@ -48,6 +48,8 @@ const server=http.createServer((req,res)=>{
     });
     await page.goto(`http://127.0.0.1:${server.address().port}/pixel-editor/v5/`);
     await page.waitForFunction(()=>!!window.pixelLab?.imageIO);
+    assert.equal(await page.locator('[data-quick="ai"]').innerText(),'🧠 AI Clean');
+    assert.equal(await page.locator('#aiCleanApply').innerText(),'Очистить в копию');
     const pixels=async target=>Buffer.from(await page.evaluate(target=>{
       const c=target==='ref'?document.getElementById('ref'):window.pixelLab.layers.active().canvas;
       return Array.from(c.getContext('2d').getImageData(0,0,135,400).data);

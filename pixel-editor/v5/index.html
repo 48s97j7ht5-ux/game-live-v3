@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Pixel Lab 400 V5 Modular</title>
-  <link rel="stylesheet" href="./styles.css?v=20260902-layer-tree1">
+  <link rel="stylesheet" href="./styles.css?v=20260913-ai-clean1">
   <link rel="stylesheet" href="./layer-png.css?v=20260902-github-browser1">
 </head>
 <body>
@@ -42,6 +42,13 @@
         <div class="row"><b>Структура персонажа</b></div>
         <div id="layers" class="layers"></div>
       </div>
+      <div class="card" id="aiCleanCard">
+        <b>🧠 AI Clean</b>
+        <div class="small">Нейросеть уточняет силуэт, затем редактор жёстко чистит пиксели. Исходный слой не меняется.</div>
+        <div class="row"><label>Сила <input id="aiCleanStrength" type="range" min="0" max="100" value="45"></label><b id="aiCleanStrengthValue">45%</b></div>
+        <div class="row"><label><input id="aiCleanPalette" type="checkbox" checked> максимум 64 цвета</label></div>
+        <button id="aiCleanApply">Очистить в копию</button>
+      </div>
       <div class="card">
         <div class="row"><b>🔬 Лупа</b><span id="coord">x67 y200</span></div>
         <div id="tools" class="row"></div>
@@ -56,7 +63,6 @@
   <script type="importmap">
     {"imports":{"#pixel-app":"./core/app.js?v=20260902-core-fix2"}}
   </script>
-  <script type="module" src="./main.js?v=20260907-native-png1"></script>
+  <script type="module" src="./main.js?v=20260913-ai-clean1"></script>
 </body>
 </html>
-
