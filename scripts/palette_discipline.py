@@ -11,11 +11,13 @@ read as a highlight or a fold at sprite scale, it reads as grain.
 Two passes, in this order:
 
   1. anchor + remap. Pick the N colours with the most *anchored* pixels (ones
-     with a 4-neighbour of their own colour, per sprite_audit.py), then map
-     every other colour to its nearest anchor. Anchored count, not raw count,
-     is what ranks a deliberate small detail above a larger smear -- on Kat's
-     bikini sprite the cream highlight (94 px, 71 anchored) is real and
-     #BD8268 (127 px, 49 anchored) is not, which raw count gets backwards.
+     with a 4-neighbour of their own colour, per sprite_audit.py) while
+     refusing any that duplicates a chosen one, then map every other colour to
+     its nearest anchor. Anchored count, not raw count, is what ranks a
+     deliberate small detail above a larger smear -- on Kat's bikini sprite the
+     cream highlight (94 px, 71 anchored) is real and #BD8268 (127 px, 49
+     anchored) is not, which raw count gets backwards. See pick_anchors for why
+     the distinctness guard is not optional on continuous-tone input.
   2. despeckle. After remapping, some pixels still sit alone. Replace each
      with the most common colour among its 8 neighbours -- the mode, never an
      average, so the result stays inside the anchor set and the palette cap
@@ -40,7 +42,7 @@ and 9.3% orphaned (2461 px), at the default --min-share:
 
     --colors  8   ->  2.3% orphaned, despeckle rewrote 504 px
     --colors 10   ->  3.5% orphaned, despeckle rewrote 507 px
-    --colors 14   ->  5.6% orphaned, despeckle rewrote 532 px
+    --colors 14   ->  5.4% orphaned, despeckle rewrote 512 px
     --colors 18   ->  6.6% orphaned, despeckle rewrote 533 px
 
 Which says something worth knowing about the two passes: the remap does nearly
@@ -55,6 +57,11 @@ and the mouth line breaks. Below roughly 14 colours the shading on this sprite
 stops describing form. 14 with the default share is where it was measured to
 look best; a 32x32 sprite would sit far lower, so re-measure per sprite rather
 than carrying this number across.
+
+The starting orphan rate says what kind of source you have. An already-indexed
+sprite lands around 9%; a continuous-tone render flattened onto a grid came in
+at 58% across 6176 colours, and needed no different settings -- just the
+distinctness guard -- to reach 3.0% at 14 colours.
 """
 
 from __future__ import annotations
@@ -81,15 +88,35 @@ def parse_hex(text: str) -> tuple[int, int, int]:
     return tuple(int(s[i : i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
 
 
-def pick_anchors(img: Image.Image, count: int, keep: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+def pick_anchors(
+    img: Image.Image, count: int, keep: list[tuple[int, int, int]], min_distance: float = 28.0
+) -> list[tuple[int, int, int]]:
+    """Most-anchored colours first, but never two that look the same.
+
+    Ranking on anchored count alone works only when the source is already
+    indexed. On a continuous-tone render it fails badly: one skin tone spreads
+    into hundreds of micro-variants differing by a channel step or two, each
+    still accumulating enough anchored pixels to outrank real structure. Asked
+    for 14 anchors on a 6176-colour flattened render, the unguarded version
+    returned thirteen shades of the same skin (#FCB58D, #FDB58D, #FCB48C, all
+    at value 0.99) and dropped the outline entirely -- the face came back with
+    no eyes, brows or mouth, because every dark pixel was only 0.7% of the
+    sprite and lost the count.
+
+    min_distance fixes that by requiring each new anchor to be at least that
+    far in redmean from the ones already chosen, so the budget buys distinct
+    shades rather than one colour's noise cloud. Low-population structure then
+    survives on being *different*, which is what actually makes it carry form.
+    """
     total, orphans = sprite_audit.orphan_map(img)
     ranked = sorted(total, key=lambda c: total[c] - orphans[c], reverse=True)
     anchors = list(keep)
     for colour in ranked:
         if len(anchors) >= count:
             break
-        if colour not in anchors:
-            anchors.append(colour)
+        if any(redmean(colour, a) < min_distance for a in anchors):
+            continue
+        anchors.append(colour)
     return anchors
 
 
@@ -173,6 +200,12 @@ def main() -> int:
         default=[],
         help="Hex colour to anchor regardless of its rank, repeatable (e.g. an eye highlight too small to survive)",
     )
+    parser.add_argument(
+        "--min-distance",
+        type=float,
+        default=28.0,
+        help="Redmean distance two anchors must differ by; raise it on continuous-tone sources",
+    )
     parser.add_argument("--no-despeckle", action="store_true", help="Remap only, leave the specks in place")
     parser.add_argument(
         "--min-share",
@@ -189,7 +222,7 @@ def main() -> int:
         print("image is fully transparent")
         return 1
 
-    anchors = pick_anchors(img, args.colors, args.keep)
+    anchors = pick_anchors(img, args.colors, args.keep, args.min_distance)
     out = remap(img, anchors)
     fixed = 0
     if not args.no_despeckle:
