@@ -2,12 +2,22 @@
 
 Сюда складываем **экспорты (Gemini / Leonardo)**, пока не разложены по `templates/`.
 
-**Промпты Gemini (512 px, ~300 px рост, палитра 32):** [`docs/gemini-pixel-prompts.md`](../../docs/gemini-pixel-prompts.md)
+**Масштаб и стиль (400 px master):** [`docs/character-scale-kat.md`](../../../docs/character-scale-kat.md)  
+**Промпты Gemini (512 px, refine):** [`docs/gemini-pixel-prompts.md`](../../../docs/gemini-pixel-prompts.md)
+
+## Файлы в репо (Cursor)
+
+| Файл | Описание |
+|------|----------|
+| `kat-scale-test-sheet-cursor.png` | Лист **200 / 300 / 400 px** + mock сцен (как ваш «ТЕСТ МАСШТАБА»). |
+| `kat-fullbody-400px-cursor.png` | Один спрайт **400 px**, sports bra + шорты, прозрачный/белый фон. |
+| `kat-pixel-base-reference-512.png` | База тела (faceless), 512 canvas. |
 
 ## Файлы (загрузите PNG сюда)
 
 | Файл | Описание |
 |------|----------|
+| `scale-test-master.png` | Ваш оригинальный лист-макет (если отличается от cursor). |
 | `kat-fullbody-neutral-512.png` | **Целиком:** референс пропорций, ¾, ~300 px высота в кадре 512×512. |
 | `kat-head-base-512.png` | **Голова/шея без черт** — для слоя `head`. |
 | `kat-body-pregnant-512.png` | Вариант тела (не face-compositor). |
