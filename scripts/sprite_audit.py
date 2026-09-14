@@ -101,13 +101,21 @@ def main() -> int:
         rows.append((anchored, n, orphans[colour], "#%02X%02X%02X" % colour, hue * 360, sat * 100, val * 100))
     rows.sort(reverse=True)
 
+    try:
+        report(img, rows, opaque, orphans, args.anchored_floor)
+    except BrokenPipeError:
+        pass
+    return 0
+
+
+def report(img, rows, opaque, orphans, anchored_floor) -> None:
     print(f"{img.width}x{img.height}, {opaque} opaque px, {len(rows)} colours")
     print(f"orphaned overall: {sum(orphans.values())} px ({sum(orphans.values()) / opaque * 100:.1f}%)")
     print()
     print(f"{'hex':<8} {'px':>6} {'share':>7} {'anchored':>9} {'orphan':>7} {'hue':>6} {'sat':>5} {'val':>5}")
     tail = 0
     for anchored, n, orph, hx, hue, sat, val in rows:
-        if anchored < args.anchored_floor:
+        if anchored < anchored_floor:
             tail += 1
             continue
         print(
@@ -115,9 +123,7 @@ def main() -> int:
             f"{hue:>6.1f} {sat:>5.1f} {val:>5.1f}"
         )
     if tail:
-        print(f"... and {tail} colours below {args.anchored_floor} anchored px (the noise tail)")
-
-    return 0
+        print(f"... and {tail} colours below {anchored_floor} anchored px (the noise tail)")
 
 
 if __name__ == "__main__":
