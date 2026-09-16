@@ -4,3 +4,7 @@
 __pycache__/
 output/
 .venv/
+
+# MagicPixel CLI: API key lives in .magicpixel/credentials — never commit it
+.magicpixel/
+magicpixel.json
